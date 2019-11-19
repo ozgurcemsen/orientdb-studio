@@ -20,7 +20,7 @@ import '../views/database/modalEditEdge.html';
 import '../views/vertex/modalConnection.html';
 import '../views/vertex/modalVertexSelect.html';
 import '../views/hints/template-hint.html';
-
+import { saveAs } from 'file-saver';
 import angular from 'angular';
 
 let GraphModule = angular.module('vertex.controller', ["graph.services", Icons, BrowseConfig]);
@@ -717,13 +717,12 @@ GraphModule.controller("GraphController", ['$scope', '$routeParams', '$location'
     var html = d3.select(".graph-container svg")
       .attr("version", 1.1)
       .attr("xmlns", "http://www.w3.org/2000/svg")
+      .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
       .node().parentNode.innerHTML;
 
 
     var blob = new Blob([html], {type: "image/svg+xml"});
     saveAs(blob, "myProfile.svg");
-
-
   }
   $scope.clear = function () {
     $scope.graph.clear();

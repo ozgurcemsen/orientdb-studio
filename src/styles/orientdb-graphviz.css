@@ -237,15 +237,10 @@ path.emore-link {
   stroke: #DC4717;
 }
 
-/*.svg-container {*/
-  /*display: inline-block;*/
-  /*position: relative;*/
-  /*height: 600px;*/
-  /*width: 100%;*/
-  /*!* aspect ratio *!*/
-  /*vertical-align: top;*/
-  /*overflow: hidden;*/
-/*}*/
+.svg-container {
+  height: 2400px;
+  width: 100%;
+}
 
 /*.svg-container-expanded {*/
   /*padding-bottom: 40%;*/
