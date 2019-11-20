@@ -1196,7 +1196,6 @@ let OrientGraph = (function () {
 
 
     function calculateEdgePath(padding) {
-
       var d = d3.select(this.parentNode).datum();
 
 
@@ -1301,7 +1300,7 @@ let OrientGraph = (function () {
 
       dr = dr / (1 + (1 / length) * (pos - 1));
 
-      return dr;
+      return dr / 2;
 
     }
 
@@ -2289,6 +2288,7 @@ let OrientGraph = (function () {
       free.forEach(function (e, i, arr) {
         e.x = center.x + radius * Math.sin(2 * Math.PI * i / len)
         e.y = center.y + radius * Math.cos(2 * Math.PI * i / len)
+
 
       })
     },
