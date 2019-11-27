@@ -4,9 +4,10 @@
  * License: MIT
  */
 import '../styles/orientdb-graphviz.css';
+
 let OrientGraph = (function () {
 
-  var graph = {};
+  let graph = {};
 
   function OGraph(elem, config, metadata, menuActions, edgeActions) {
 
@@ -15,7 +16,7 @@ let OrientGraph = (function () {
 
 
     this.originElement = elem;
-    this.svg;
+    this.svg = null;
     this.config = merge(config);
 
 
@@ -23,9 +24,9 @@ let OrientGraph = (function () {
     this.metadata = getMerger().extend({}, metadata);
     this.menuActions = menuActions;
     this.edgeActions = edgeActions;
-    this.topics = {}
+    this.topics = {};
     this.vertices = {};
-    this.edges = {}
+    this.edges = {};
     this.links = [];
     this.nodes = [];
     this.classesLegends = [];
@@ -34,7 +35,7 @@ let OrientGraph = (function () {
 
     this.colors = createColors(this.metadata.classes);
     // this.colors = d3.scale.category20();
-    var self = this;
+    let self = this;
     this.selected = null;
     this.dragNode = null;
     this.clusterClass = initClusterClass();
@@ -44,7 +45,7 @@ let OrientGraph = (function () {
     this.changer = initChanger();
 
     function initClusterClass() {
-      var ctoc = {};
+      let ctoc = {};
       if (self.metadata) {
         if (self.metadata.classes) {
           self.metadata.classes.forEach(function (c) {
@@ -65,16 +66,16 @@ let OrientGraph = (function () {
         return a - b;
       });
       let color = d3.scale.category20()
-        .domain([val[0], val[val.length - 1]])
+        .domain([val[0], val[val.length - 1]]);
       classes.forEach((c) => {
         color(hash(c.name));
-      })
+      });
       return color;
     }
 
     function hashCode(str) {
-      var hash = 0;
-      if (str.length == 0) return hash;
+      let hash = 0;
+      if (str.length === 0) return hash;
       for (let i = 0; i < str.length; i++) {
         let char = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
@@ -88,22 +89,22 @@ let OrientGraph = (function () {
     }
 
     function discoverVertex(clazz) {
-      var sup = clazz;
-      var iterator = clazz;
-      while ((iterator = getSuperClazz(iterator)) != "") {
+      let sup = clazz;
+      let iterator = clazz;
+      while ((iterator = getSuperClazz(iterator)) !== "") {
         sup = iterator;
       }
-      return sup == 'V';
+      return sup === 'V';
     }
 
     function getSuperClazz(clazz) {
-      var metadata = self.metadata;
+      let metadata = self.metadata;
 
-      var classes = metadata['classes'];
-      var clazzReturn = "";
-      for (var entry in classes) {
-        var name = classes[entry]['name'];
-        if (clazz == name) {
+      let classes = metadata['classes'];
+      let clazzReturn = "";
+      for (let entry in classes) {
+        let name = classes[entry]['name'];
+        if (clazz === name) {
           clazzReturn = classes[entry].superClass;
           break;
         }
@@ -113,7 +114,7 @@ let OrientGraph = (function () {
     }
 
     function initChanger() {
-      var change = [];
+      let change = [];
       change['display'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -130,7 +131,7 @@ let OrientGraph = (function () {
             return bindRealNameOrClazz(e.edge);
           });
 
-      }
+      };
 
       change['displayExpression'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
@@ -148,7 +149,7 @@ let OrientGraph = (function () {
             return bindRealNameOrClazz(e.edge);
           });
 
-      }
+      };
       change['displayColor'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -160,7 +161,7 @@ let OrientGraph = (function () {
             return bindColor(d, "displayColor");
           })
 
-      }
+      };
       change['displayBackground'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -170,7 +171,7 @@ let OrientGraph = (function () {
           .selectAll('rect.vlabel-outside-bbox')
           .style("fill", bindRectColor)
           .style("stroke", bindRectColor)
-      }
+      };
 
       change['icon'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
@@ -184,7 +185,7 @@ let OrientGraph = (function () {
           .text(val)
 
 
-      }
+      };
       change['iconSize'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -195,7 +196,7 @@ let OrientGraph = (function () {
           .selectAll('.vlabel-icon')
           .style("font-size", self.config.classes[clazz].iconSize || 30);
 
-      }
+      };
 
       change['iconCss'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
@@ -204,7 +205,7 @@ let OrientGraph = (function () {
 
         self.config.classes[clazz].iconCss = val;
 
-      }
+      };
       change['iconVPadding'] = function (clazz, prop, val) {
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -215,11 +216,11 @@ let OrientGraph = (function () {
         d3.selectAll('g.vertex-' + clazz.toLowerCase())
           .selectAll('.vlabel-icon')
           .attr('y', function (d) {
-            var iconPadding = self.getClazzConfigVal(getClazzName(d), "iconVPadding");
+            let iconPadding = self.getClazzConfigVal(getClazzName(d), "iconVPadding");
             return iconPadding || 10;
           })
 
-      }
+      };
       change['strokeWidth'] = function (clazz, prop, val) {
 
         if (!self.config.classes[clazz]) {
@@ -232,8 +233,8 @@ let OrientGraph = (function () {
           .style('stroke-width', function (d) {
             return bindStrokeWidth(d.edge);
           })
-      }
-      var style = function (clazz, prop, val) {
+      };
+      let style = function (clazz, prop, val) {
 
         if (!self.config.classes[clazz]) {
           self.config.classes[clazz] = {}
@@ -255,7 +256,7 @@ let OrientGraph = (function () {
           .style(prop, function (d) {
             return bindStroke(d.edge);
           })
-      }
+      };
       change['fill'] = style;
       change['stroke'] = style;
       change['r'] = function (clazz, prop, val) {
@@ -274,9 +275,7 @@ let OrientGraph = (function () {
           .attr('y', function (d) {
             return parseInt(bindRadius(d)) + 15;
           })
-
-
-      }
+      };
       return change;
     }
 
@@ -292,25 +291,25 @@ let OrientGraph = (function () {
 
 
       this.svgContainer.selectAll("g.legend-container").attr("class", function () {
-        var cls = d3.select(this).attr("class");
-        return cls.indexOf("hide") != -1 ? "legend-container" : "legend-container hide";
+        let cls = d3.select(this).attr("class");
+        return cls.indexOf("hide") !== -1 ? "legend-container" : "legend-container hide";
       })
-      //var parent = d3.select(this.classesContainer.node().parentNode());
+      //let parent = d3.select(this.classesContainer.node().parentNode());
       //
       //console.log(parent);
-      //var cls = parent.attr("class");
-      //if (cls.indexOf("hide") != -1) {
+      //let cls = parent.attr("class");
+      //if (cls.indexOf("hide") !== -1) {
       //  parent.attr("class", "legend-container");
       //} else {
       //  parent.attr("class", "legend-container hide");
       //}
 
-    }
+    };
     this.fullScreen = function (full) {
       if (full) {
-        var start = $(this.originElement).offset().top;
-        var wHeight = $(document).height();
-        var height = wHeight - start;
+        let start = $(this.originElement).offset().top;
+        let wHeight = $(document).height();
+        let height = wHeight - start;
         this.svgContainer
           .attr('height', height)
       } else {
@@ -318,38 +317,40 @@ let OrientGraph = (function () {
           .attr('height', self.config.height)
       }
 
-    }
+    };
 
     this.releasePhysicsInternal = function () {
       this.svgContainer.selectAll("g.vertex").classed("fixed", function (v) {
         return v.fixed = false
       })
-    }
+    };
 
     this.freezePhysicsInternal = function () {
       this.svgContainer.selectAll("g.vertex").classed("fixed", function (v) {
         return v.fixed = true
-      })
+      });
       this.force.stop();
-    }
+    };
 
     this.resetZoomInternal = function () {
-      var b = graphBounds();
-      var w = b.X - b.x, h = b.Y - b.y;
+      let b = graphBounds();
+      let w = b.X - b.x, h = b.Y - b.y;
 
 
-      var bbox = this.svgContainer.node().getBoundingClientRect();
-      var cw = bbox.width, ch = bbox.height;
-      var s = Math.min(cw / w, ch / h);
-      var tx = (-b.x * s + (cw / s - w) * s / 2), ty = (-b.y * s + (ch / s - h) * s / 2);
+      let bbox = this.svgContainer.node().getBoundingClientRect();
+      let cw = bbox.width, ch = bbox.height;
+      let s = Math.min(cw / w, ch / h);
+      let tx = (-b.x * s + (cw / s - w) * s / 2), ty = (-b.y * s + (ch / s - h) * s / 2);
 
       this.svgContainer.transition()
         .duration(750)
         .call(this.zoomComponent.translate([tx, ty]).scale(s).event);
 
-    }
+    };
+
     function graphBounds() {
-      var x = Number.POSITIVE_INFINITY, X = Number.NEGATIVE_INFINITY, y = Number.POSITIVE_INFINITY, Y = Number.NEGATIVE_INFINITY;
+      let x = Number.POSITIVE_INFINITY, X = Number.NEGATIVE_INFINITY, y = Number.POSITIVE_INFINITY,
+        Y = Number.NEGATIVE_INFINITY;
 
       d3.selectAll("g.vertex").each(function (v) {
         x = Math.min(x, v.x - 100);
@@ -365,103 +366,103 @@ let OrientGraph = (function () {
         self.nodes.push(v);
         self.put([v["@rid"]], v);
       }
-    }
+    };
     this.addEdge = function (e) {
-      var v1 = e.right ? e.source : e.target;
-      var v2 = e.right ? e.target : e.source;
+      let v1 = e.right ? e.source : e.target;
+      let v2 = e.right ? e.target : e.source;
 
-      var id = v1["@rid"] + "_" + v2["@rid"];
-      var count = self.edges[id];
+      let id = v1["@rid"] + "_" + v2["@rid"];
+      let count = self.edges[id];
       if (!count) {
         self.edges[id] = [];
       }
-      var found = false;
-      var l = e.label.replace("in_", "").replace("out_", "");
+      let found = false;
+      let l = e.label.replace("in_", "").replace("out_", "");
 
-      if (l == "") l = "E";
+      if (l === "") l = "E";
       self.edges[id].forEach(function (e1) {
-        var l1 = e1.label.replace("in_", "").replace("out_", "");
-        if (l1 == "") l1 = "E";
-        if (e1.source == e.source && e1.target == e.target && l == l1 && e.edge["@rid"] === e1.edge["@rid"]) {
+        let l1 = e1.label.replace("in_", "").replace("out_", "");
+        if (l1 === "") l1 = "E";
+        if (e1.source === e.source && e1.target === e.target && l === l1 && e.edge["@rid"] === e1.edge["@rid"]) {
           found = true;
         }
-      })
+      });
       if (!found) {
         self.edges[id].push(e);
         self.links.push(e);
       }
-    }
+    };
 
     this.setSelected = function (v) {
-      var newSel = v != self.selected;
+      let newSel = v !== self.selected;
       self.selected = v;
       refreshSelected(newSel);
       self.edgeMenu.hide();
-    }
+    };
     this.get = function (k) {
       return self.vertices[k];
-    }
+    };
     this.put = function (k, v) {
       self.vertices[k] = v;
-    }
+    };
     this.delete = function (k) {
       delete self.vertices[k];
-    }
+    };
     this.clearGraph = function () {
       self.clearSelection();
       self.vertices = {};
       self.edges = {};
-      self.classesInCanvas = {vertices: [], edges: []}
+      self.classesInCanvas = {vertices: [], edges: []};
       self.edgesInCanvas = [];
-      self.nodes.splice(0, self.nodes.length)
-      self.links.splice(0, self.links.length)
-    }
+      self.nodes.splice(0, self.nodes.length);
+      self.links.splice(0, self.links.length);
+    };
     this.simulate = function (forceTick) {
 
-      var self = this;
+      let self = this;
 
-      var mst = 100
-      var mas = 60
-      var mtct = 1000 / mas
-      var now = function () {
+      let mst = 100;
+      let mas = 60;
+      let mtct = 1000 / mas;
+      let now = function () {
         return Date.now();
-      }
+      };
 
-      var tick = this.force.tick;
+      let tick = this.force.tick;
 
       this.force.tick = function () {
 
 
-        var startTick = now()
-        var step = mst
+        let startTick = now();
+        let step = mst;
         while (step-- && (now() - startTick < mtct)) {
           if (tick()) {
-            mst = 2
+            mst = 2;
             return true
           }
         }
-        var rnd = Math.floor((Math.random() * 100) + 1);
-        if (rnd % 2 == 0) {
+        let rnd = Math.floor((Math.random() * 100) + 1);
+        if (rnd % 2 === 0) {
           self.tick();
         }
 
-        if (forceTick == true) {
+        if (forceTick === true) {
           self.tick();
         }
         return false;
       }
-    }
+    };
 
     this.init = function () {
 
-      var self = this;
+      let self = this;
       this.force.nodes(this.nodes)
         .links(this.links)
         .size([this.config.width, this.config.height])
         .linkDistance(this.config.linkDistance)
         .linkStrength(0.1)
         .charge(this.config.charge)
-        .friction(this.config.friction)
+        .friction(this.config.friction);
 
 
       this.svgContainer = this.viewport.append('svg');
@@ -529,14 +530,12 @@ let OrientGraph = (function () {
       this.svgContainer.on("click", function () {
         self.clearSelection();
         clearArrow();
-      })
+      });
       this.svgContainer.on('mousemove', function () {
 
         if (!self.dragNode) return;
         // update drag line
         self.drag_line.attr('d', 'M' + self.dragNode.x + ',' + self.dragNode.y + 'L' + d3.mouse(self.svg.node())[0] + ',' + d3.mouse(self.svg.node())[1]);
-
-
       });
       this.circleSelected = this.svg.append('svg:g').append("svg:circle")
         .attr("class", "selected-vertex selected-vertex-none")
@@ -564,8 +563,7 @@ let OrientGraph = (function () {
       if (self.edgeActions) {
         this.edgeMenu = new OEdgeMenu(this);
       }
-
-    }
+    };
 
     function clearArrow() {
 
@@ -584,10 +582,9 @@ let OrientGraph = (function () {
       }
       if (d.source['@class']) {
         return d.source['@class'];
-      }
-      else {
-        var cluster = d["@rid"].replace("#", "").split(":")[0];
-        var cfg = self.clusterClass[cluster];
+      } else {
+        let cluster = d["@rid"].replace("#", "").split(":")[0];
+        let cfg = self.clusterClass[cluster];
         return cfg ? cfg.name : null;
       }
     }
@@ -595,9 +592,9 @@ let OrientGraph = (function () {
     function bindClassName(d) {
 
       d.elem = this;
-      var cname = getClazzName(d);
-      var css = self.getClazzConfigVal(cname, "css");
-      var cls = 'vertex ';
+      let cname = getClazzName(d);
+      let css = self.getClazzConfigVal(cname, "css");
+      let cls = 'vertex ';
       if (cname) {
         cls += 'vertex-' + cname.toLowerCase();
       }
@@ -606,30 +603,28 @@ let OrientGraph = (function () {
 
 
     function countRel(d) {
-      var v1 = d.right ? d.source : d.target;
-      var v2 = d.right ? d.target : d.source;
+      let v1 = d.right ? d.source : d.target;
+      let v2 = d.right ? d.target : d.source;
 
-      var id = v1["@rid"] + "_" + v2["@rid"];
-      var len = self.edges[id].length
-      return len;
+      let id = v1["@rid"] + "_" + v2["@rid"];
+      return self.edges[id].length
     }
 
     function countRelInOut(d) {
-      var v1 = d.right ? d.source : d.target;
-      var v2 = d.right ? d.target : d.source;
+      let v1 = d.right ? d.source : d.target;
+      let v2 = d.right ? d.target : d.source;
 
-      var id = v1["@rid"] + "_" + v2["@rid"];
-      var id1 = v2["@rid"] + "_" + v1["@rid"];
-      var len = (self.edges[id] ? self.edges[id].length : 0 ) + (self.edges[id1] ? self.edges[id1].length : 0)
-      return len;
+      let id = v1["@rid"] + "_" + v2["@rid"];
+      let id1 = v2["@rid"] + "_" + v1["@rid"];
+      return (self.edges[id] ? self.edges[id].length : 0) + (self.edges[id1] ? self.edges[id1].length : 0)
     }
 
 
     function calculateRelPos(d) {
-      var v1 = d.right ? d.source : d.target;
-      var v2 = d.right ? d.target : d.source;
+      let v1 = d.right ? d.source : d.target;
+      let v2 = d.right ? d.target : d.source;
 
-      var id = v1["@rid"] + "_" + v2["@rid"];
+      let id = v1["@rid"] + "_" + v2["@rid"];
 
       return self.edges[id].indexOf(d);
     }
@@ -638,9 +633,9 @@ let OrientGraph = (function () {
 
       // TO REMOVEe ?
       d.elem = this;
-      var len = countRel(d);
-      var replaced = d.label.replace("in_", "").replace("out_", "")
-      return (replaced != "" ? replaced : "E");//+ ( len > 1 ? " (+" + (len - 1) + ")" : "");
+      //let len = countRel(d);
+      let replaced = d.label.replace("in_", "").replace("out_", "");
+      return (replaced !== "" ? replaced : "E");//+ ( len > 1 ? " (+" + (len - 1) + ")" : "");
 
     }
 
@@ -648,7 +643,7 @@ let OrientGraph = (function () {
       self.selected = null;
       self.menu.hide();
       self.edgeMenu.hide();
-    }
+    };
     this.startEdgeCreation = function () {
 
 
@@ -660,31 +655,31 @@ let OrientGraph = (function () {
         .classed('hidden', false)
         .attr('d', 'M' + this.dragNode.x + ',' + this.dragNode.y + 'L' + this.dragNode.x + ',' + this.dragNode.y);
 
-    }
+    };
     this.endEdgeCreation = function () {
       this.clearSelection();
       clearArrow();
       self.drag_line
         .classed('hidden', true)
         .style('marker-end', '');
-    }
+    };
 
     this.isConnected = function (node1, node2) {
 
 
-      if (node1["@rid"] === node2["@rid"])return true;
-      var k1 = node1["@rid"] + "_" + node2["@rid"];
-      var k2 = node2["@rid"] + "_" + node1["@rid"];
+      if (node1["@rid"] === node2["@rid"]) return true;
+      let k1 = node1["@rid"] + "_" + node2["@rid"];
+      let k2 = node2["@rid"] + "_" + node1["@rid"];
       return this.edges[k1] || this.edges[k2];
-    }
+    };
 
     this.isInOrOut = function (node, edge) {
 
       return node["@rid"] === edge.source["@rid"] || node["@rid"] === edge.target["@rid"];
-    }
+    };
     this.drawInternal = function () {
 
-      var self = this;
+      let self = this;
       this.path = this.path.data(this.links);
       this.circle = this.circle.data(this.nodes, function (d) {
         return d['@rid'];
@@ -703,13 +698,13 @@ let OrientGraph = (function () {
 
       this.clsLegend = this.classesContainerData.enter().append("svg:g").attr("class", function (d) {
         return "legend legend-" + d.toLowerCase();
-      })
+      });
 
 
       // Vertex Class
       this.clsLegend.attr("transform", function (d, i) {
         return "translate(0," + 25 * i + ")";
-      })
+      });
 
 
       this.clsLegend.append("circle")
@@ -718,16 +713,16 @@ let OrientGraph = (function () {
 
         })
         .attr("class", function (d) {
-          return self.classesInCanvas.vertices.indexOf(d) == -1 ? "elem-invisible" : "";
+          return self.classesInCanvas.vertices.indexOf(d) === -1 ? "elem-invisible" : "";
         })
         .style("fill", function (d) {
-          var fill = self.getClazzConfigVal(d, "fill");
+          let fill = self.getClazzConfigVal(d, "fill");
           return fill ? fill : null;
         })
         .style("stroke", function (d) {
-          var stroke = self.getClazzConfigVal(d, "stroke");
+          let stroke = self.getClazzConfigVal(d, "stroke");
           return stroke ? stroke : null;
-        })
+        });
 
       this.clsLegend.append("line")
         .attr("x1", -10)
@@ -735,25 +730,25 @@ let OrientGraph = (function () {
         .attr("y1", 0)
         .attr("y2", 0)
         .attr("class", function (d) {
-          return self.classesInCanvas.edges.indexOf(d) == -1 ? "elem-invisible" : "";
+          return self.classesInCanvas.edges.indexOf(d) === -1 ? "elem-invisible" : "";
         })
         .style("stroke-width", 5)
         .style("fill", function (d) {
-          var fill = self.getClazzConfigVal(d, "fill");
+          let fill = self.getClazzConfigVal(d, "fill");
           return fill ? fill : null;
         })
         .style("stroke", function (d) {
-          var stroke = self.getClazzConfigVal(d, "stroke");
+          let stroke = self.getClazzConfigVal(d, "stroke");
           return stroke ? stroke : null;
-        })
+        });
 
-      var txt = this.clsLegend.append("text")
+      let txt = this.clsLegend.append("text")
         .attr("dy", 5)
         .text(function (d) {
           return d;
-        })
+        });
       txt.each(function () {
-        var diff = 15;
+        let diff = 15;
         d3.select(this).attr("dx", diff);
 
       });
@@ -765,7 +760,7 @@ let OrientGraph = (function () {
 
       this.edgePath = this.pathG.append('svg:path')
         .attr("class", function (d) {
-          var eclass = d.edge ? "edge" : "edge lightweight"
+          let eclass = d.edge ? "edge" : "edge lightweight";
           return eclass + " edge-" + d.label.toLowerCase();
         })
         .attr("id", function (d, i) {
@@ -783,7 +778,7 @@ let OrientGraph = (function () {
         })
         .style("stroke-width", function (d) {
           return bindStrokeWidth(d.edge);
-        })
+        });
 
 
       this.pathG.append('svg:path')
@@ -800,7 +795,7 @@ let OrientGraph = (function () {
         .on("mouseover", function (d) {
 
           d3.select(this).style("opacity", "0.3");
-          //var eclass = d.edge ? "edge" : "edge lightweight"
+          //let eclass = d.edge ? "edge" : "edge lightweight"
           //eclass = eclass + " edge-hover edge-" + d.label.toLowerCase();
           //d3.select(this).attr("class", eclass)
           //  .style('marker-start', function (d) {
@@ -809,12 +804,10 @@ let OrientGraph = (function () {
           //  return d.right ? 'url(#end-arrow-hover)' : '';
           //});
         })
-
-
         .on("mouseout", function (d) {
 
           d3.select(this).style("opacity", "0");
-          //var eclass = d.edge ? "edge" : "edge lightweight"
+          //let eclass = d.edge ? "edge" : "edge lightweight"
           //eclass += " edge-" + d.label.toLowerCase();
           //d3.select(this).attr("class", eclass)
           //  .style('marker-start', function (d) {
@@ -826,8 +819,8 @@ let OrientGraph = (function () {
         .on("click", function (e) {
           d3.event.stopPropagation();
 
-          var node = d3.select(this.parentNode).select("text.elabel").node();
-          self.edgeMenu.select({elem: node, d: e})
+          let node = d3.select(this.parentNode).select("text.elabel").node();
+          self.edgeMenu.select({elem: node, d: e});
           if (self.topics['edge/click']) {
             self.topics['edge/click'](e);
           }
@@ -836,8 +829,8 @@ let OrientGraph = (function () {
 
       this.pathG.append('svg:text')
         .attr("class", function (d) {
-          var cls = getClazzName(d.edge);
-          var clsEdge = cls ? cls.toLowerCase() : "-e";
+          let cls = getClazzName(d.edge);
+          let clsEdge = cls ? cls.toLowerCase() : "-e";
           return "elabel elabel-" + clsEdge;
         })
 
@@ -852,7 +845,7 @@ let OrientGraph = (function () {
           return bindRealNameOrClazz(e.edge);
         }).on("click", function (e) {
         d3.event.stopPropagation();
-        self.edgeMenu.select({elem: this, d: e})
+        self.edgeMenu.select({elem: this, d: e});
         if (self.topics['edge/click']) {
           self.topics['edge/click'](e);
         }
@@ -860,28 +853,24 @@ let OrientGraph = (function () {
 
       this.path.exit().remove();
 
-
-      var g = this.circle.enter().append('svg:g').attr('class', bindClassName);
-
+      let g = this.circle.enter().append('svg:g').attr('class', bindClassName);
 
       g.on('mouseover', function (v) {
 
-
         if (self.dragNode) {
-          var r = bindRadius(v);
+          let r = bindRadius(v);
           r = parseInt(r);
-          var newR = r + ((r * 20) / 100);
-          d3.select(v.elem).selectAll('circle').attr('r', newR)
+          let newR = r + ((r * 20) / 100);
+          d3.select(v.elem).selectAll('circle').attr('r', newR);
         }
-
 
         d3.selectAll("g.vertex").style("opacity", function (n) {
           return self.isConnected(v, n) ? 1 : 0.1;
-        })
+        });
 
         d3.selectAll("g.menu").style("opacity", function (n) {
           return 0.1;
-        })
+        });
         d3.selectAll("path.edge").style("opacity", function (edge) {
           return self.isInOrOut(v, edge) ? 1 : 0.1;
         });
@@ -889,7 +878,6 @@ let OrientGraph = (function () {
           return self.isInOrOut(v, edge) ? 1 : 0.1;
         });
       });
-
 
       g.on('mouseout', function (v) {
         if (self.dragNode) {
@@ -900,10 +888,10 @@ let OrientGraph = (function () {
         if (!d3.select(this).classed("dragging")) {
           d3.selectAll("g.vertex").style("opacity", function (n) {
             return 1;
-          })
+          });
           d3.selectAll("g.menu").style("opacity", function (n) {
             return 1;
-          })
+          });
           d3.selectAll("path.edge").style("opacity", function (n) {
             return 1;
           });
@@ -911,22 +899,22 @@ let OrientGraph = (function () {
             return 1;
           });
         }
-      })
+      });
 
-      var drag = this.force.drag();
+      let drag = this.force.drag();
 
       drag.on("dragstart", function (v) {
         d3.event.sourceEvent.stopPropagation();
         d3.select(this).classed("dragging", true);
         d3.select(this).classed("fixed", v.fixed = true);
-      })
+      });
       drag.on("dragend", function (v) {
         d3.event.sourceEvent.stopPropagation();
         d3.select(this).classed("dragging", false);
         //d3.select(this).classed("fixed", v.fixed = false);
-      })
+      });
       g.call(drag);
-      var cc = clickcancel();
+      let cc = clickcancel();
 
       g.on('dblclick', function () {
         d3.event.stopPropagation();
@@ -941,7 +929,7 @@ let OrientGraph = (function () {
           self.dragNode = null;
           d3.select(v.elem).selectAll('circle').attr('r', bindRadius);
         }
-      })
+      });
       cc.on('click', function (e, v) {
 
         if (self.topics['node/click']) {
@@ -987,30 +975,29 @@ let OrientGraph = (function () {
       g.append('svg:text')
         .attr('x', 0)
         .attr('y', function (d) {
-          var iconPadding = self.getClazzConfigVal(getClazzName(d), "iconVPadding");
+          let iconPadding = self.getClazzConfigVal(getClazzName(d), "iconVPadding");
           return iconPadding || 10;
         })
         .attr('class', function (d) {
-          var name = self.getClazzConfigVal(getClazzName(d), "icon");
-          return 'vlabel-icon vicon' + (!name ? ' elem-invisible' : '')
-          bind;
+          let name = self.getClazzConfigVal(getClazzName(d), "icon");
+          return 'vlabel-icon vicon' + (!name ? ' elem-invisible' : '');
         })
         .style("font-size", function (d) {
-          var size = self.getClazzConfigVal(getClazzName(d), "iconSize");
+          let size = self.getClazzConfigVal(getClazzName(d), "iconSize");
           return size || 30;
         })
         .text(bindIcon);
 
 
-      var group = g.append("g");
+      let group = g.append("g");
       group.attr('class', "vlabel-outside-group");
 
       function bindBboxPos(prop) {
         return function (elem) {
-          var node = d3.select(this.parentNode)
+          let node = d3.select(this.parentNode)
             .selectAll('text.vlabel-outside')
             .node();
-          var bbox = node.getBBox();
+          let bbox = node.getBBox();
           return bbox[prop];
         }
       }
@@ -1039,7 +1026,7 @@ let OrientGraph = (function () {
         .style("fill-opacity", 0.5)
         .style("stroke-width", 1)
         .style("stroke", bindRectColor)
-        .style("fill", bindRectColor)
+        .style("fill", bindRectColor);
 
       this.circle.exit().remove();
       this.zoomComponent = d3.behavior.zoom()
@@ -1047,16 +1034,17 @@ let OrientGraph = (function () {
         .on("zoom", this.zoom);
 
       this.svgContainer.call(this.zoomComponent);
-    }
+    };
 
     function clickcancel() {
-      var event = d3.dispatch('click', 'dblclick');
+      let event = d3.dispatch('click', 'dblclick');
 
       function cc(selection) {
-        var down,
+        let down,
           tolerance = 5,
           last,
           wait = null;
+
         // euclidean distance
         function dist(a, b) {
           return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2));
@@ -1069,7 +1057,7 @@ let OrientGraph = (function () {
         });
         selection.on('mouseup', function (v) {
           if (dist(down, d3.mouse(document.body)) > tolerance) {
-            return;
+
           } else {
 
             if (wait) {
@@ -1086,13 +1074,14 @@ let OrientGraph = (function () {
             }
           }
         });
-      };
+      }
+
       return d3.rebind(cc, event, 'on');
     }
 
     function bindRadius(d) {
 
-      var radius = self.getClazzConfigVal(getClazzName(d), "r");
+      let radius = self.getClazzConfigVal(getClazzName(d), "r");
       return radius ? radius : self.getConfigVal("node").r;
     }
 
@@ -1103,8 +1092,8 @@ let OrientGraph = (function () {
     }
 
     function bindFill(d) {
-      var clsName = getClazzName(d);
-      var fill = self.getClazzConfigVal(clsName, "fill");
+      let clsName = getClazzName(d);
+      let fill = self.getClazzConfigVal(clsName, "fill");
       if (!fill) {
         fill = d3.rgb(self.colors(hash(clsName))).toString();
         self.changeClazzConfig(clsName, "fill", fill);
@@ -1113,8 +1102,8 @@ let OrientGraph = (function () {
     }
 
     function bindStroke(d) {
-      var clsName = getClazzName(d);
-      var stroke = self.getClazzConfigVal(clsName, "stroke");
+      let clsName = getClazzName(d);
+      let stroke = self.getClazzConfigVal(clsName, "stroke");
       if (!stroke) {
 
         stroke = d3.rgb(self.colors(hash(clsName))).darker().toString();
@@ -1127,10 +1116,10 @@ let OrientGraph = (function () {
 
     function bindColor(d, prop, def) {
 
-      var clsName = getClazzName(d);
-      var stroke = self.getClazzConfigVal(clsName, prop);
+      let clsName = getClazzName(d);
+      let stroke = self.getClazzConfigVal(clsName, prop);
       if (!stroke) {
-        var ret = def || "rgb(0, 0, 0)";
+        let ret = def || "rgb(0, 0, 0)";
         return ret;
       }
       return stroke;
@@ -1138,8 +1127,8 @@ let OrientGraph = (function () {
     }
 
     function bindStrokeWidth(d) {
-      var clsName = getClazzName(d);
-      var stroke = self.getClazzConfigVal(clsName, "strokeWidth");
+      let clsName = getClazzName(d);
+      let stroke = self.getClazzConfigVal(clsName, "strokeWidth");
       return stroke || 3;
 
     }
@@ -1153,7 +1142,7 @@ let OrientGraph = (function () {
     function bindRealName(d) {
 
 
-      var name = self.getClazzConfigVal(getClazzName(d), "displayExpression");
+      let name = self.getClazzConfigVal(getClazzName(d), "displayExpression");
 
 
       if (name && name !== "") {
@@ -1161,62 +1150,61 @@ let OrientGraph = (function () {
       } else {
         name = self.getClazzConfigVal(getClazzName(d), "display", d.source);
       }
-      var rid;
+      let rid;
       if (d['@rid'].startsWith("#-")) {
-        var props = Object.keys(d.source).filter(function (e) {
+        let props = Object.keys(d.source).filter(function (e) {
           return !e.startsWith("@");
-        })
+        });
         rid = (props.length > 0 && d.source[props[0]]) ? d.source[props[0]] : d['@rid'];
       } else {
         rid = d['@rid'];
       }
 
-      return name != null ? name : rid;
+      return name !== null ? name : rid;
     }
 
     function bindRealNameOrClazz(d) {
 
-      var clazz = getClazzName(d);
+      let clazz = getClazzName(d);
 
-      var name = self.getClazzConfigVal(getClazzName(d), "displayExpression");
+      let name = self.getClazzConfigVal(getClazzName(d), "displayExpression");
 
       if (name && name !== "") {
         name = S(name).template(d);
       } else {
         name = self.getClazzConfigVal(clazz, "display", d);
       }
-      return name != null ? name : clazz;
+      return name !== null ? name : clazz;
     }
 
     function bindIcon(d) {
 
-      var name = self.getClazzConfigVal(getClazzName(d), "icon");
-      return name;
+      return self.getClazzConfigVal(getClazzName(d), "icon");
     }
 
 
     function calculateEdgePath(padding) {
-      var d = d3.select(this.parentNode).datum();
+      let d = d3.select(this.parentNode).datum();
 
 
-      var radiusSource = self.getClazzConfigVal(getClazzName(d.source), "r");
-      var radiusTarget = self.getClazzConfigVal(getClazzName(d.target), "r");
+      let radiusSource = self.getClazzConfigVal(getClazzName(d.source), "r");
+      let radiusTarget = self.getClazzConfigVal(getClazzName(d.target), "r");
 
       radiusSource = radiusSource ? radiusSource : self.getConfigVal("node").r;
       radiusTarget = radiusTarget ? radiusTarget : self.getConfigVal("node").r;
 
 
-      var padd = 5;
+      let padd = 5;
 
       radiusTarget = parseInt(radiusTarget);
       radiusSource = parseInt(radiusSource);
-      var deltaX = d.target.x - d.source.x,
+      let deltaX = d.target.x - d.source.x,
         deltaY = d.target.y - d.source.y,
         dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
 
 
-        normX = deltaX / (dist != 0 ? dist : 1),
-        normY = deltaY / (dist != 0 ? dist : 1),
+        normX = deltaX / (dist !== 0 ? dist : 1),
+        normY = deltaY / (dist !== 0 ? dist : 1),
         sourcePadding = d.left ? (radiusSource + padd) : radiusSource,
         targetPadding = d.right ? (radiusTarget + padd) : radiusTarget,
         sourceX = d.source.x + (sourcePadding * normX),
@@ -1225,20 +1213,17 @@ let OrientGraph = (function () {
         targetY = d.target.y - (targetPadding * normY);
       // Config Node - > Label
 
+      let rel = countRelInOut(d);
 
-      var rel = countRelInOut(d);
-
-
-      if (rel == 1) {
+      if (rel === 1) {
         return 'M' + sourceX + ',' + sourceY + ' L' + targetX + ',' + targetY;
       } else {
 
-        var realPos = calculateRelPos(d);
+        let realPos = calculateRelPos(d);
 
-
-        if (realPos == 0) {
-          var paddingSource = 5;
-          var paddingTarget = 5;
+        if (realPos === 0) {
+          let paddingSource = 5;
+          let paddingTarget = 5;
           if (deltaX > 0) {
             paddingSource = -1 * 5;
             paddingTarget = -1 * 5;
@@ -1246,19 +1231,19 @@ let OrientGraph = (function () {
 
           return 'M' + (sourceX + paddingSource) + ',' + (sourceY + paddingSource) + ' L' + (targetX + paddingTarget) + ',' + (targetY + paddingTarget);
         }
-        var pos = realPos + 1;
-        var m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
-        var val = (Math.atan(m) * 180) / Math.PI;
-        var trans = val * (Math.PI / 180) * -1;
-        var edgesLength = countRel(d);
-        var radiansConfig = angleRadiants(pos, edgesLength);
+        let pos = realPos + 1;
+        let m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
+        let val = (Math.atan(m) * 180) / Math.PI;
+        let trans = val * (Math.PI / 180) * -1;
+        let edgesLength = countRel(d);
+        let radiansConfig = angleRadiants(pos, edgesLength);
 
-        var angleSource;
-        var angleTarget;
-        var signSourceX;
-        var signSourceY;
-        var signTargetX;
-        var signTargetY;
+        let angleSource;
+        let angleTarget;
+        let signSourceX;
+        let signSourceY;
+        let signTargetX;
+        let signTargetY;
 
         if (deltaX < 0) {
           signSourceX = 1;
@@ -1277,47 +1262,42 @@ let OrientGraph = (function () {
         }
 
 
-        sourceX = d.source.x + ( signSourceX * (sourcePadding * Math.cos(angleSource)));
-        sourceY = d.source.y + ( signSourceY * (sourcePadding * Math.sin(angleSource)));
-        targetX = d.target.x + ( signTargetX * (targetPadding * Math.cos(angleTarget)));
-        targetY = d.target.y + ( signTargetY * (targetPadding * Math.sin(angleTarget)));
+        sourceX = d.source.x + (signSourceX * (sourcePadding * Math.cos(angleSource)));
+        sourceY = d.source.y + (signSourceY * (sourcePadding * Math.sin(angleSource)));
+        targetX = d.target.x + (signTargetX * (targetPadding * Math.cos(angleTarget)));
+        targetY = d.target.y + (signTargetY * (targetPadding * Math.sin(angleTarget)));
 
 
-        // var mod = dist / 10;
-        // var dr = mod * rel;
+        // let mod = dist / 10;
+        // let dr = mod * rel;
 
-        var dr = calculateDR(targetX - sourceX, targetY - sourceY, pos, edgesLength);
+        let dr = calculateDR(targetX - sourceX, targetY - sourceY, pos, edgesLength);
 
         return "M" + sourceX + "," + sourceY + "A" + dr + "," + dr + " 0 0,1 " + targetX + "," + targetY;
       }
-
     }
 
 
     function calculateDR(dx, dy, pos, length) {
       pos = length - pos;
-      var dr = Math.sqrt(dx * dx + dy * dy);
+      let dr = Math.sqrt(dx * dx + dy * dy);
 
       dr = dr / (1 + (1 / length) * (pos - 1));
 
       return dr / 2;
-
     }
 
     function angleRadiants(pos, length) {
-
-
       let sourceAngle = 90 - (90 / length) * pos;
-      let targetAngle = (180 - ( 90 - (90 / length) * pos));
+      let targetAngle = (180 - (90 - (90 / length) * pos));
 
       return {source: sourceAngle * (Math.PI / 180), target: targetAngle * (Math.PI / 180)};
-
     }
 
     function bindRectColor(d) {
-      var def = "rgba(0, 0, 0, 0)";
-      var c = bindColor(d, "displayBackground", def);
-      if (c == "#ffffff") {
+      let def = "rgba(0, 0, 0, 0)";
+      let c = bindColor(d, "displayBackground", def);
+      if (c === "#ffffff") {
         c = def;
       }
       return c;
@@ -1325,35 +1305,35 @@ let OrientGraph = (function () {
 
     function bindName(d) {
 
-      var name = self.getClazzConfigVal(getClazzName(d), "icon");
+      let name = self.getClazzConfigVal(getClazzName(d), "icon");
 
       if (!name) {
         name = self.getClazzConfigVal(getClazzName(d), "display", d.source);
       }
 
 
-      var rid;
+      let rid;
       if (d['@rid'].startsWith("#-")) {
 
-        var props = Object.keys(d.source).filter(function (e) {
+        let props = Object.keys(d.source).filter(function (e) {
           return !e.startsWith("@");
-        })
+        });
         rid = (props.length > 0 && d.source[props[0]]) ? d.source[props[0]] : d['@rid'];
       } else {
         rid = d['@rid'];
       }
 
-      return name != null ? name : rid;
+      return name !== null ? name : rid;
     }
 
     this.changeClazzConfig = function (clazz, prop, val) {
       if (this.changer[prop])
         this.changer[prop](clazz, prop, val);
-    }
+    };
     this.changeLinkDistance = function (distance) {
       this.force.linkDistance(distance);
       this.config.linkDistance = distance;
-    }
+    };
     this.getClazzConfigVal = function (clazz, prop, obj) {
       if (!clazz || !prop) return null;
 
@@ -1362,10 +1342,10 @@ let OrientGraph = (function () {
         return obj ? obj[self.config.classes[clazz][prop]] : self.config.classes[clazz][prop];
       }
       return null;
-    }
+    };
     this.getConfig = function () {
       return this.config;
-    }
+    };
     this.getClazzConfig = function (clazz) {
       if (!self.config.classes) {
         self.config.classes = {};
@@ -1374,41 +1354,42 @@ let OrientGraph = (function () {
         self.config.classes[clazz] = {};
       }
       return getMerger().extend({}, self.config.classes[clazz]);
-    }
+    };
     this.getConfigVal = function (prop) {
       return self.config[prop];
-    }
+    };
     this.removeInternalVertex = function (v) {
       this.clearSelection();
-      var idx = self.nodes.indexOf(v);
+      let idx = self.nodes.indexOf(v);
       self.nodes.splice(idx, 1);
-      var toSplice = self.links.filter(function (l) {
+      let toSplice = self.links.filter(function (l) {
         return (l.source === v || l.target === v);
       });
       toSplice.map(function (l) {
         self.links.splice(self.links.indexOf(l), 1);
       });
 
-    }
+    };
     this.removeInternalEdge = function (e) {
-      var idx = self.links.indexOf(e);
+      let idx = self.links.indexOf(e);
       self.links.splice(idx, 1);
       this.clearSelection();
 
       //d3.select(e.elem).remove();
-    }
+    };
     this.zoom = function () {
 
-      var scale = d3.event.scale;
-      var translation = d3.event.translate;
+      let scale = d3.event.scale;
+      let translation = d3.event.translate;
       self.svg.attr("transform", "translate(" + translation + ")" +
         " scale(" + scale + ")");
-    }
+    };
+
     function refreshSelected(change) {
 
 
       if (self.selected) {
-        var selR = parseInt(bindRadius(self.selected));
+        let selR = parseInt(bindRadius(self.selected));
         self.menu.refreshPosition(selR, change);
 
       }
@@ -1416,11 +1397,11 @@ let OrientGraph = (function () {
 
     this.tick = function () {
 
-      var path = self.path.selectAll("path.edge");
+      let path = self.path.selectAll("path.edge");
 
       path.attr('d', calculateEdgePath);
 
-      var overlay = self.path.selectAll("path.path-overlay");
+      let overlay = self.path.selectAll("path.path-overlay");
 
       overlay.attr('d', function () {
         return calculateEdgePath.bind(this)(0);
@@ -1434,14 +1415,14 @@ let OrientGraph = (function () {
         return 'translate(' + d.x + ',' + d.y + ')';
       });
       // refreshSelected();
-    }
+    };
 
     this.isVertex = function (elem) {
-      if (typeof elem == 'object') {
+      if (typeof elem === 'object') {
         return !(elem['in'] && elem['out']) && elem['@rid'];
       } else {
-        var cid = elem.replace("#", "").split(":")[0];
-        var cfg = self.clusterClass[cid];
+        let cid = elem.replace("#", "").split(":")[0];
+        let cfg = self.clusterClass[cid];
 
         if (cfg) return cfg.isVertex;
       }
@@ -1487,7 +1468,7 @@ let OrientGraph = (function () {
     this.graph = graph;
     this.current = graph.svg.append('svg:g').attr("class", "edgeMore");
     this.currentData = null;
-    var self = this;
+    let self = this;
 
 
     this.select = function (data, change) {
@@ -1495,39 +1476,38 @@ let OrientGraph = (function () {
 
       if (self.currentData && change) {
 
-        var eclass = self.currentData.d.edge ? "edge" : "edge lightweight"
+        let eclass = self.currentData.d.edge ? "edge" : "edge lightweight";
         d3.select(self.currentData.elem.parentNode).select("path.edge").attr("class", eclass + " hide");
         d3.select(self.currentData.elem.parentNode).select("text.elabel").attr("class", "elabel hide");
       }
       self.currentData = data;
       this.current.selectAll("*").remove();
-      var sourceData = data;
-      var d = data.d;
+      let sourceData = data;
+      let d = data.d;
 
 
-      var v1 = d.right ? d.source : d.target;
-      var v2 = d.right ? d.target : d.source;
+      let v1 = d.right ? d.source : d.target;
+      let v2 = d.right ? d.target : d.source;
 
-      var id = v1["@rid"] + "_" + v2["@rid"];
+      let id = v1["@rid"] + "_" + v2["@rid"];
 
-      var child = self.graph.edges[id].filter(function (e, i) {
+      let child = self.graph.edges[id].filter(function (e, i) {
         return i > 0;
       });
 
 
-      var eclass = data.d.edge ? "edge" : "edge lightweight"
-      eclass += change ? "" : " edge-hover"
+      let eclass = data.d.edge ? "edge" : "edge lightweight";
+      eclass += change ? "" : " edge-hover";
       eclass += " edge-" + data.d.label.toLowerCase();
       d3.select(data.elem.parentNode).selectAll("path.edge").attr("class", eclass);
       d3.select(data.elem).attr("class", "elabel");
-      var width = 100 * child.length;
+      let width = 100 * child.length;
       this.tree = d3.layout.tree().size([50, 50]);
-      var data = {name: "", children: child, x: 0, y: 0, root: true}
-      var nodes = this.tree.nodes(data);
-      var links = this.tree.links(nodes);
+      let nodes = this.tree.nodes({name: "", children: child, x: 0, y: 0, root: true});
+      let links = this.tree.links(nodes);
 
       // Edges between nodes as a <path class="link" />
-      var link = d3.svg.diagonal()
+      let link = d3.svg.diagonal()
         .projection(function (d) {
           return [d.y, d.x];
         });
@@ -1538,7 +1518,7 @@ let OrientGraph = (function () {
         .attr("class", "emore-link")
         .attr("d", link);
 
-      var nodeGroup = this.current.selectAll("g.emore")
+      let nodeGroup = this.current.selectAll("g.emore")
         .data(nodes)
         .enter()
         .append("svg:g")
@@ -1549,8 +1529,7 @@ let OrientGraph = (function () {
           return "translate(" + d.y + "," + d.x + ")";
         });
 
-
-      var texts = nodeGroup.append("svg:text")
+      let texts = nodeGroup.append("svg:text")
         .attr("text-anchor", function (d) {
           return d.children ? "end" : "start";
         })
@@ -1562,10 +1541,10 @@ let OrientGraph = (function () {
         }).on("click", function (d) {
 
 
-          var v1 = d.right ? d.source : d.target;
-          var v2 = d.right ? d.target : d.source;
-          var idx = v1["@rid"] + "_" + v2["@rid"];
-          var index = self.graph.edges[idx].indexOf(d);
+          let v1 = d.right ? d.source : d.target;
+          let v2 = d.right ? d.target : d.source;
+          let idx = v1["@rid"] + "_" + v2["@rid"];
+          let index = self.graph.edges[idx].indexOf(d);
           self.graph.edges[idx].splice(index, 1);
           self.graph.edges[idx].unshift(d);
           self.select({elem: d.elem, d: d}, true);
@@ -1586,33 +1565,33 @@ let OrientGraph = (function () {
         })
         .attr("class", "more-text-container");
 
-    }
+    };
     this.clear = function () {
       if (this.current) this.current.remove();
-    }
+    };
 
     this.refreshPosition = function () {
 
       self.current.attr("transform", function () {
         if (self.currentData) {
-          var data = self.currentData;
+          let data = self.currentData;
 
-          var d = data.d;
-          var bb = data.elem.getBBox();
-          var m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
-          var x = (d.target.x + d.source.x) / 2;
-          var y = (d.target.y + d.source.y) / 2;
-          var val = (Math.atan(m) * 180) / Math.PI;
+          let d = data.d;
+          let bb = data.elem.getBBox();
+          let m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
+          let x = (d.target.x + d.source.x) / 2;
+          let y = (d.target.y + d.source.y) / 2;
+          let val = (Math.atan(m) * 180) / Math.PI;
           val += 270;
 
-          var text = d3.select(this).selectAll("text")
-            .attr("transform", function (data) {
-              return 'rotate( ' + ( +0) + ')';
-            })
-          var text = d3.select(this).selectAll("rect")
-            .attr("transform", function (data) {
-              return 'rotate( ' + ( +0) + ')';
-            })
+          // let text = d3.select(this).selectAll("text")
+          //   .attr("transform", function (data) {
+          //     return 'rotate( ' + (+0) + ')';
+          //   });
+          // text = d3.select(this).selectAll("rect")
+          //   .attr("transform", function (data) {
+          //     return 'rotate( ' + (+0) + ')';
+          //   });
           if (!isNaN(val)) {
             return 'rotate(' + val + ' ' + x + ' ' + y + ') translate(' + (x + (bb.height)) + ' ' + (y) + ')';
           }
@@ -1627,18 +1606,17 @@ let OrientGraph = (function () {
   function OEdgeMenu(graph) {
 
     this.graph = graph;
-    this.edgeContainer = graph.svg.append('svg:g').attr("class", "edgeMenu hide")
+    this.edgeContainer = graph.svg.append('svg:g').attr("class", "edgeMenu hide");
 
-
-    var width = 40 * graph.edgeActions.length;
+    let width = 40 * graph.edgeActions.length;
     this.tree = d3.layout.tree().size([width, 50]);
 
-    var data = {name: "", children: graph.edgeActions, x: 0, y: 0, root: true}
-    var nodes = this.tree.nodes(data);
-    var links = this.tree.links(nodes);
+    let data = {name: "", children: graph.edgeActions, x: 0, y: 0, root: true};
+    let nodes = this.tree.nodes(data);
+    let links = this.tree.links(nodes);
 
     // Edges between nodes as a <path class="link" />
-    var link = d3.svg.diagonal()
+    let link = d3.svg.diagonal()
       .projection(function (d) {
         return [d.y, d.x];
       });
@@ -1651,7 +1629,7 @@ let OrientGraph = (function () {
       .attr("d", link);
 
 
-    var nodeGroup = this.edgeContainer.selectAll("g.enode")
+    let nodeGroup = this.edgeContainer.selectAll("g.enode")
       .data(nodes)
       .enter()
       .append("svg:g")
@@ -1660,13 +1638,13 @@ let OrientGraph = (function () {
         return "translate(" + d.y + "," + d.x + ")";
       });
 
-    var circle = nodeGroup.append("svg:circle")
+    let circle = nodeGroup.append("svg:circle")
       .attr("class", function (d) {
         return d.root ? "enode-root" : "enode-child";
       })
       .attr("r", 15);
 
-    var texts = nodeGroup.append("svg:text")
+    let texts = nodeGroup.append("svg:text")
       .attr("text-anchor", function (d) {
         return d.children ? "end" : "start";
       })
@@ -1682,43 +1660,43 @@ let OrientGraph = (function () {
         }
       });
 
-    var self = this;
+    let self = this;
     this.select = function (data) {
-      var bb = data.elem.getBBox();
+      let bb = data.elem.getBBox();
       self.selectedEdge = data;
-      self.edgeContainer.attr("class", "edgeMenu")
+      self.edgeContainer.attr("class", "edgeMenu");
       self.edgeContainer.datum({bbox: bb, edge: data.d, elem: data.elem});
       self.refreshPosition();
       self.graph.menu.hide();
 
-    }
+    };
 
     this.hide = function () {
       self.edgeContainer.attr("class", "edgeMenu hide")
-    }
+    };
     this.refreshPosition = function () {
       self.edgeContainer.attr("transform", function (data) {
         if (data) {
-          var d = data.edge;
-          var bb = data.bbox;
+          let d = data.edge;
+          let bb = data.bbox;
 
-          var deltaX = d.target.x - d.source.x;
-          var m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
-          var x = (d.target.x + d.source.x) / 2;
-          var y = (d.target.y + d.source.y) / 2;
-          var val = (Math.atan(m) * 180) / Math.PI;
+          let deltaX = d.target.x - d.source.x;
+          let m = (d.target.y - d.source.y) / (d.target.x - d.source.x);
+          let x = (d.target.x + d.source.x) / 2;
+          let y = (d.target.y + d.source.y) / 2;
+          let val = (Math.atan(m) * 180) / Math.PI;
           val += 90 * (deltaX < 0 ? 1 : -1);
           texts.attr("transform", function (data) {
-            return 'rotate( ' + ( -val) + ')';
-          })
+            return 'rotate( ' + (-val) + ')';
+          });
           if (!isNaN(val)) {
-            var offsetX = -bb.width;
-            var offsetY = -bb.height;
+            let offsetX = -bb.width;
+            let offsetY = -bb.height;
             if (deltaX < 0) {
-              var offsetX = bb.height / 2;
-              var offsetY = -bb.width;
+              let offsetX = bb.height / 2;
+              let offsetY = -bb.width;
             }
-            return 'rotate(' + val + ' ' + bb.x + ' ' + bb.y + ') translate(' + (bb.x + offsetX  ) + ' ' + (bb.y + offsetY ) + ')';
+            return 'rotate(' + val + ' ' + bb.x + ' ' + bb.y + ') translate(' + (bb.x + offsetX) + ' ' + (bb.y + offsetY) + ')';
           }
         }
       });
@@ -1740,9 +1718,9 @@ let OrientGraph = (function () {
       .innerRadius(0)
       .outerRadius(0);
 
-    var self = this;
-    var menuSel = null;
-    var menuGroup = this.menuContainer.selectAll("g")
+    let self = this;
+    let menuSel = null;
+    let menuGroup = this.menuContainer.selectAll("g")
       .data(this.pie(graph.menuActions))
       .enter()
       .append("g")
@@ -1755,7 +1733,7 @@ let OrientGraph = (function () {
       }).on("mouseover", function (d) {
 
 
-        if (menuSel != null && menuSel != this) {
+        if (menuSel !== null && menuSel !== this) {
           d3.select(menuSel).selectAll("g.treemenu").remove();
           d3.select(menuSel).selectAll("g.submenu").remove();
         }
@@ -1764,24 +1742,24 @@ let OrientGraph = (function () {
         if (d.data.submenu) {
 
           if (d.data.submenu.entries instanceof Function) {
-            var res = d.data.submenu.entries(graph.selected);
+            let res = d.data.submenu.entries(graph.selected);
           } else {
-            var res = d.data.submenu.entries;
+            let res = d.data.submenu.entries;
           }
-          if (d.data.submenu.type == 'tree') {
+          if (d.data.submenu.type === 'tree') {
 
 
             if (!d3.select(this).selectAll("g.treemenu").empty()) {
-              if (self.subSelected == d)return;
+              if (self.subSelected === d) return;
             }
             self.subSelected = d;
 
 
-            var height = 17 * res.length;
-            var width = 50;
-            var parent = d;
+            let height = 17 * res.length;
+            let width = 50;
+            let parent = d;
 
-            var orientations = {
+            let orientations = {
               "rtl": {
                 size: [height, width],
                 width: width,
@@ -1811,45 +1789,45 @@ let OrientGraph = (function () {
                 }
               }
             };
-            var orientation = (d.startAngle >= 0 && d.endAngle <= Math.PI) ? orientations["ltr"] : orientations["rtl"];
+            let orientation = (d.startAngle >= 0 && d.endAngle <= Math.PI) ? orientations["ltr"] : orientations["rtl"];
 
 
-            var tree = d3.layout.tree().size(orientation.size);
-            var coord = self.arc.centroid(d)
-            var diagonal = d3.svg.diagonal()
+            let tree = d3.layout.tree().size(orientation.size);
+            let coord = self.arc.centroid(d);
+            let diagonal = d3.svg.diagonal()
               .projection(function (d) {
                 return [d.y, d.x];
               });
 
 
-            var i = 0;
-            var data = {name: d.data.name, children: res, x0: coord[0], y0: coord[1], root: true}
-            var nodes = tree.nodes(data).reverse();
-            var links = tree.links(nodes);
+            let i = 0;
+            let data = {name: d.data.name, children: res, x0: coord[0], y0: coord[1], root: true};
+            let nodes = tree.nodes(data).reverse();
+            let links = tree.links(nodes);
 
             nodes.forEach(function (d) {
               d.y = d.depth * orientation.width;
             });
 
 
-            var mcontainer = d3.select(this).append('g').attr("class", "treemenu");
+            let mcontainer = d3.select(this).append('g').attr("class", "treemenu");
             mcontainer.attr("transform", function (d) {
               return "translate(" + (coord[0] + orientation.offset) + "," + (coord[1] - (height / 2)) + ")";
-            })
-            var n = mcontainer.selectAll('g.treenode').data(nodes, function (d) {
+            });
+            let n = mcontainer.selectAll('g.treenode').data(nodes, function (d) {
               return d.id || (d.id = ++i);
             });
 
-            var nodeEnter = n.enter().append("g")
+            let nodeEnter = n.enter().append("g")
               .attr("class", function (d) {
                 return d.root ? "treenode-root" : "treenode";
               })
               .attr("transform", function (d) {
                 return "translate(" + coord[1] + "," + coord[0] + ")";
-              })
+              });
 
 
-            var txt = nodeEnter.append("text")
+            let txt = nodeEnter.append("text")
               .attr("x", function (d) {
                 return d.children || d._children ? -10 : 10;
               })
@@ -1865,16 +1843,16 @@ let OrientGraph = (function () {
                 d.onClick(graph.selected, d.label);
               });
 
-            var bboxWidth = d3.select(txt.node().parentNode).node().parentNode.getBBox();
-            var bbox = txt.node().getBBox();
-            var padding = 2;
+            let bboxWidth = d3.select(txt.node().parentNode).node().parentNode.getBBox();
+            let bbox = txt.node().getBBox();
+            let padding = 2;
             nodeEnter.insert("rect", "text")
               .attr("x", bbox.x - padding)
               .attr("y", bbox.y - padding)
               .attr("width", bboxWidth.width + (padding * 2))
               .attr("height", bbox.height + (padding * 2))
               .attr("class", "tree-text-container");
-            var nodeUpdate = n.transition()
+            let nodeUpdate = n.transition()
               .duration(750)
               .attr("transform", function (d) {
                 return "translate(" + orientation.xoff(d) + "," + orientation.y(d) + ")";
@@ -1882,9 +1860,9 @@ let OrientGraph = (function () {
 
 
             nodeUpdate.select("text")
-              .style("fill-opacity", 1).attr("class", "tree-text-menu")
+              .style("fill-opacity", 1).attr("class", "tree-text-menu");
 
-            var link = mcontainer.selectAll("path.treelink")
+            let link = mcontainer.selectAll("path.treelink")
               .data(links, function (d) {
                 return d.target.id;
               });
@@ -1893,7 +1871,7 @@ let OrientGraph = (function () {
             link.enter().insert("path", "g")
               .attr("class", "treelink")
               .attr("d", function (d) {
-                var o = {x: coord[0], y: coord[1]};
+                let o = {x: coord[0], y: coord[1]};
                 return diagonal({source: o, target: o});
               });
 
@@ -1903,21 +1881,16 @@ let OrientGraph = (function () {
               .attr("d", d3.svg.diagonal().projection(function (d) {
                 return [orientation.x(d), orientation.y(d)];
               }));
-
             // Transition exiting nodes to the parent's new position.
-
-
           } else {
-
-
             if (!d3.select(this).selectAll("g.submenu").empty()) {
               return;
             }
-            var arcSub = d3.svg.arc()
+            let arcSub = d3.svg.arc()
               .innerRadius(d.innerRadius + 40)
-              .outerRadius(d.innerRadius)
-            var sEntry = d3.select(this).append("g").attr("class", "submenu");
-            var entryGroup = sEntry.selectAll("g")
+              .outerRadius(d.innerRadius);
+            let sEntry = d3.select(this).append("g").attr("class", "submenu");
+            let entryGroup = sEntry.selectAll("g")
               .data(self.pie(res))
               .enter()
               .append("g")
@@ -1926,8 +1899,8 @@ let OrientGraph = (function () {
                 d3.event.stopPropagation();
                 if (sd.data.onClick)
                   sd.data.onClick(graph.selected, sd.data.name);
-              })
-            var submenu = entryGroup.append("path")
+              });
+            let submenu = entryGroup.append("path")
               .attr("fill", function (d, i) {
                 return graph.colors(i);
               })
@@ -1935,9 +1908,9 @@ let OrientGraph = (function () {
               .attr("id", function (d, i) {
                 return "subpath" + i;
               })
-              .attr("class", "menu-path")
+              .attr("class", "menu-path");
 
-            var submenuText = entryGroup.append("text")
+            let submenuText = entryGroup.append("text")
               .attr("class", "menu-text")
               .attr("transform", function (d) {
                 return "translate(" + arcSub.centroid(d) + ")";
@@ -1951,14 +1924,14 @@ let OrientGraph = (function () {
       })
       .on("mouseout", function (d) {
 
-      })
+      });
 
     this.menu = menuGroup.append("path")
       .attr("fill", function (d, i) {
         return graph.colors(i);
       })
       .attr("d", this.arc)
-      .attr("class", "menu-path")
+      .attr("class", "menu-path");
 
     this.menuText = menuGroup.append("text")
       .attr("class", "menu-text")
@@ -1968,17 +1941,17 @@ let OrientGraph = (function () {
       .attr("dy", ".35em")
       .text(function (d) {
         return d.data.name;
-      })
+      });
 
     this.hide = function () {
       this.clearSubMenu();
       self.menuContainer.attr("class", "menu menu-hide");
-    }
+    };
     this.clearSubMenu = function () {
-      if (menuSel != null) {
+      if (menuSel !== null) {
         d3.select(menuSel).selectAll("g.treemenu").remove();
       }
-    }
+    };
     this.refreshPosition = function (selR, change) {
       self.menuContainer.attr('transform', function () {
 
@@ -1987,11 +1960,12 @@ let OrientGraph = (function () {
       });
 
       self.menuContainer.attr("class", "menu");
+
       function tweenPie(b) {
         b.outerRadius = selR;
         b.innerRadius = selR + 40;
 
-        var i = d3.interpolate({startAngle: 0, endAngle: 0, outerRadius: 0, innerRadius: 0}, b);
+        let i = d3.interpolate({startAngle: 0, endAngle: 0, outerRadius: 0, innerRadius: 0}, b);
         return function (t) {
           return self.arc(i(t));
         };
@@ -2020,8 +1994,8 @@ let OrientGraph = (function () {
   function checkInput(val) {
 
     if (!val) return false;
-    if (typeof val == 'string' && val.indexOf("#") == 0) return true;
-    if (typeof val == 'object' && checkInput(val['@rid'])) return true;
+    if (typeof val === 'string' && val.indexOf("#") === 0) return true;
+    if (typeof val === 'object' && checkInput(val['@rid'])) return true;
     return false;
   }
 
@@ -2045,7 +2019,7 @@ let OrientGraph = (function () {
 
   graph.create = function (element, config, metadata, vertexActions, edgeActions) {
     return new OGraph(element, config, metadata, vertexActions, edgeActions);
-  }
+  };
 
 
   OGraph.prototype = {
@@ -2063,22 +2037,21 @@ let OrientGraph = (function () {
 
     data: function (data) {
 
-
       if (data) {
 
         if (data instanceof Array) {
           //this.dataArray(data);
         } else {
-          var self = this;
+          let self = this;
           if (data.vertices) {
             data.vertices.forEach(function (elem) {
-              var v = self.get(elem['@rid']);
+              let v = self.get(elem['@rid']);
               if (!v) {
                 v = new OVertex(self, elem);
                 self.addVertex(v);
               }
               if (elem["@class"]) {
-                if (self.classesInCanvas.vertices.indexOf(elem["@class"]) == -1) {
+                if (self.classesInCanvas.vertices.indexOf(elem["@class"]) === -1) {
                   self.classesInCanvas.vertices.push(elem["@class"]);
                 }
               }
@@ -2086,13 +2059,13 @@ let OrientGraph = (function () {
           }
           if (data.edges) {
             data.edges.forEach(function (elem) {
-              var v1 = self.get(elem['from']) || self.get(elem['out']);
-              var v2 = self.get(elem['to']) || self.get(elem['in']);
-              var e = new OEdge(self, v1, v2, elem['@class'], elem);
+              let v1 = self.get(elem['from']) || self.get(elem['out']);
+              let v2 = self.get(elem['to']) || self.get(elem['in']);
+              let e = new OEdge(self, v1, v2, elem['@class'], elem);
               self.addEdge(e);
 
               if (elem["@class"]) {
-                if (self.classesInCanvas.edges.indexOf(elem["@class"]) == -1) {
+                if (self.classesInCanvas.edges.indexOf(elem["@class"]) === -1) {
                   self.classesInCanvas.edges.push(elem["@class"]);
                 }
               }
@@ -2104,11 +2077,11 @@ let OrientGraph = (function () {
     },
     dataArray: function (data) {
 
-      var self = this;
+      let self = this;
       self.lastDataSize = data.length;
 
       if (!self.tempEdge)
-        self.tempEdge = {}
+        self.tempEdge = {};
       data.forEach(function (elem) {
 
 
@@ -2118,11 +2091,11 @@ let OrientGraph = (function () {
               elem["@class"] = "Unknown";
             }
             if (elem["@class"]) {
-              if (self.classesInCanvas.indexOf(elem["@class"]) == -1) {
+              if (self.classesInCanvas.indexOf(elem["@class"]) === -1) {
                 self.classesInCanvas.push(elem["@class"]);
               }
             }
-            var v = self.get(elem['@rid']);
+            let v = self.get(elem['@rid']);
             if (!v) {
               v = new OVertex(self, elem);
               self.addVertex(v);
@@ -2134,98 +2107,99 @@ let OrientGraph = (function () {
             }
             inspectVertex(elem, v);
           } else if (elem['in'] && elem['out']) {
-            var v1 = self.get(elem['in']);
+            let v1 = self.get(elem['in']);
             if (!v1) {
               v1 = new OVertex(self, elem['in']);
               self.addVertex(v1);
-              var cluster = elem["in"].replace("#", "").split(":")[0];
-              var cfg = self.clusterClass[cluster];
+              let cluster = elem["in"].replace("#", "").split(":")[0];
+              let cfg = self.clusterClass[cluster];
               if (cfg) {
-                if (self.classesInCanvas.indexOf(cfg.name) == -1) {
+                if (self.classesInCanvas.indexOf(cfg.name) === -1) {
                   self.classesInCanvas.push(cfg.name);
                 }
               }
             }
-            var v2 = self.get(elem['out']);
+            let v2 = self.get(elem['out']);
             if (!v2) {
               v2 = new OVertex(self, elem['out']);
               self.addVertex(v2);
-              var cluster = elem["out"].replace("#", "").split(":")[0];
-              var cfg = self.clusterClass[cluster];
+              let cluster = elem["out"].replace("#", "").split(":")[0];
+              let cfg = self.clusterClass[cluster];
               if (cfg) {
-                if (self.classesInCanvas.indexOf(cfg.name) == -1) {
+                if (self.classesInCanvas.indexOf(cfg.name) === -1) {
                   self.classesInCanvas.push(cfg.name);
                 }
               }
             }
-            var e = new OEdge(self, v2, v1, elem['@class'], elem);
+            let e = new OEdge(self, v2, v1, elem['@class'], elem);
             self.addEdge(e);
           }
 
         }
-      )
+      );
 
-      var keys = Object.keys(self.tempEdge).filter(function (e) {
+      let keys = Object.keys(self.tempEdge).filter(function (e) {
         return self.tempEdge[e].in && self.tempEdge[e].out;
-      })
+      });
       keys.forEach(function (k) {
-        var e = new OEdge(self, self.tempEdge[k].out, self.tempEdge[k].in, self.tempEdge[k].rel, k);
+        let e = new OEdge(self, self.tempEdge[k].out, self.tempEdge[k].in, self.tempEdge[k].rel, k);
         self.addEdge(e);
         delete self.tempEdge[k];
-      })
+      });
+
       function inspectVertex(elem, v) {
-        var keys = Object.keys(elem);
+        let keys = Object.keys(elem);
         keys.forEach(function (k) {
           if (elem[k] instanceof Array) {
             elem[k].forEach(function (rid) {
                 if (checkInput(rid)) {
 
-                  if (typeof rid == 'object') {
+                  if (typeof rid === 'object') {
                     if (self.isVertex(rid)) {
-                      var v1 = self.get(rid['@rid']);
+                      let v1 = self.get(rid['@rid']);
                       if (!v1) {
                         v1 = new OVertex(self, rid);
                         self.addVertex(v1);
                         inspectVertex(rid, v1);
                       }
-                      var e = new OEdge(self, v, v1, k);
+                      let e = new OEdge(self, v, v1, k);
                       self.addEdge(e);
                     } else {
-                      var v1 = self.get(rid['in']);
+                      let v1 = self.get(rid['in']);
                       if (!v1) {
                         v1 = new OVertex(self, rid['in']);
                         self.addVertex(v1);
                       }
-                      var v2 = self.get(rid['out']);
+                      let v2 = self.get(rid['out']);
                       if (!v2) {
                         v2 = new OVertex(self, rid['out']);
                         self.addVertex(v2);
                       }
 
-                      var e = new OEdge(self, v1, v2, k, rid);
+                      let e = new OEdge(self, v1, v2, k, rid);
                       self.addEdge(e);
                     }
                   } else {
                     if (self.isVertex(rid)) {
-                      var v1 = self.get(rid);
+                      let v1 = self.get(rid);
                       if (!v1) {
                         return;
                       }
-                      var cluster = rid.replace("#", "").split(":")[0];
-                      var cfg = self.clusterClass[cluster];
+                      let cluster = rid.replace("#", "").split(":")[0];
+                      let cfg = self.clusterClass[cluster];
                       if (cfg) {
-                        if (self.classesInCanvas.indexOf(cfg.name) == -1) {
+                        if (self.classesInCanvas.indexOf(cfg.name) === -1) {
                           self.classesInCanvas.push(cfg.name);
                         }
                       }
                       if (k.startsWith('in_')) {
-                        var e = new OEdge(self, v1, v, k);
+                        let e = new OEdge(self, v1, v, k);
                       } else {
-                        var e = new OEdge(self, v, v1, k);
+                        let e = new OEdge(self, v, v1, k);
                       }
                       self.addEdge(e);
                     } else {
-                      var edge = self.tempEdge[rid];
+                      let edge = self.tempEdge[rid];
                       if (!edge) {
                         edge = {}
                       }
@@ -2235,13 +2209,10 @@ let OrientGraph = (function () {
                       } else {
                         edge.out = v;
                       }
-                      edge.rel = k
+                      edge.rel = k;
                       self.tempEdge[rid] = edge;
                     }
-
                   }
-
-
                 }
               }
             )
@@ -2265,40 +2236,35 @@ let OrientGraph = (function () {
     draw: function () {
       this.init();
 
-
       this.drawInternal();
-      var radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2)
-      var center = {x: this.config.width / 2, y: this.config.height / 2}
+      let radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2);
+      let center = {x: this.config.width / 2, y: this.config.height / 2};
       this.update(this.nodes, center, radius);
 
       this.simulate(true);
 
       this.force.start();
-
-
     },
     toggleLegend: function () {
       this.toggleLegendInternal();
     },
     update: function (nodes, center, radius) {
-      var free = nodes.filter(function (e) {
+      let free = nodes.filter(function (e) {
         return !(e.x && e.y);
-      })
-      var len = free.length;
+      });
+      let len = free.length;
       free.forEach(function (e, i, arr) {
-        e.x = center.x + radius * Math.sin(2 * Math.PI * i / len)
-        e.y = center.y + radius * Math.cos(2 * Math.PI * i / len)
-
-
+        e.x = center.x + radius * Math.sin(2 * Math.PI * i / len);
+        e.y = center.y + radius * Math.cos(2 * Math.PI * i / len);
       })
     },
     redraw: function () {
 
       this.drawInternal();
       this.clearSelection();
-      var radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2)
-      var center = {x: this.config.width / 2, y: this.config.height / 2}
-      this.update(this.nodes, center, radius)
+      let radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2);
+      let center = {x: this.config.width / 2, y: this.config.height / 2};
+      this.update(this.nodes, center, radius);
 
       this.simulate();
 
@@ -2330,8 +2296,8 @@ let OrientGraph = (function () {
     releasePhysics: function () {
       this.releasePhysicsInternal();
     }
-  }
+  };
   return graph;
 })();
 
-export  default OrientGraph;
+export default OrientGraph;
