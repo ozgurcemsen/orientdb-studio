@@ -68,9 +68,9 @@ graph.directive('ngGraphQuery', function () {
 
     circle.selectAll('circle').style('fill', function (d) {
       return "yellow";
-    })
+    });
 
-    var g = circle.enter().append('svg:g');
+    let g = circle.enter().append('svg:g');
 
     g.append('svg:circle')
       .attr('class', 'node')
@@ -80,7 +80,7 @@ graph.directive('ngGraphQuery', function () {
       })
       .style('stroke', function (d) {
         return d3.rgb(colors(d.id)).darker().toString();
-      })
+      });
 
     g.append('svg:text')
       .attr('x', 0)
@@ -91,7 +91,7 @@ graph.directive('ngGraphQuery', function () {
       });
 
     force.start();
-  }
+  };
 
   return {
     // A = attribute, E = Element, C = Class and M = HTML Comment
@@ -111,7 +111,7 @@ graph.directive('ngOGraph', function () {
       if (data) {
         loadGraph();
       }
-    })
+    });
     function loadGraph() {
       var opts = angular.extend({}, scope.$eval(attrs.ngOGraph));
       var ograph = OrientGraph.create(element[0], opts.config, opts.metadata, opts.menu, opts.edgeMenu);
@@ -127,7 +127,7 @@ graph.directive('ngOGraph', function () {
     if (opts.config) {
       loadGraph();
     }
-  }
+  };
   return {
     restrict: 'A',
     link: linker

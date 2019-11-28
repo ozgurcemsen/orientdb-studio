@@ -431,8 +431,6 @@ let OrientGraph = (function () {
       let tick = this.force.tick;
 
       this.force.tick = function () {
-
-
         let startTick = now();
         let step = mst;
         while (step-- && (now() - startTick < mtct)) {
@@ -1140,27 +1138,26 @@ let OrientGraph = (function () {
 
 
     function bindRealName(d) {
-
-
       let name = self.getClazzConfigVal(getClazzName(d), "displayExpression");
-
 
       if (name && name !== "") {
         name = S(name).template(d.source);
       } else {
-        name = self.getClazzConfigVal(getClazzName(d), "display", d.source);
+        name = ('name' in d.source) ? d.source.name : self.getClazzConfigVal(getClazzName(d), "display", d.source);
       }
-      let rid;
-      if (d['@rid'].startsWith("#-")) {
-        let props = Object.keys(d.source).filter(function (e) {
-          return !e.startsWith("@");
-        });
-        rid = (props.length > 0 && d.source[props[0]]) ? d.source[props[0]] : d['@rid'];
-      } else {
-        rid = d['@rid'];
+      if (name === null) {
+        let rid;
+        if (d['@rid'].startsWith("#-")) {
+          let props = Object.keys(d.source).filter(function (e) {
+            return !e.startsWith("@");
+          });
+          rid = (props.length > 0 && d.source[props[0]]) ? d.source[props[0]] : d['@rid'];
+        } else {
+          rid = d['@rid'];
+        }
+        return rid;
       }
-
-      return name !== null ? name : rid;
+      return name;
     }
 
     function bindRealNameOrClazz(d) {
@@ -2036,7 +2033,7 @@ let OrientGraph = (function () {
 
 
     data: function (data) {
-
+      console.log(data);
       if (data) {
 
         if (data instanceof Array) {

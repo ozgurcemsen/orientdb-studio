@@ -73,25 +73,25 @@ export class OGraph {
 
     }
 
-    for(var edge of this.edges) {
-      var edgeName = Object.keys(edge)[0];
+    for(let edge of this.edges) {
+      let edgeName = Object.keys(edge)[0];
 
-      var fromTableName = edge[edgeName].mapping[0].fromTable;
-      var toTableName = edge[edgeName].mapping[0].toTable;
+      let fromTableName = edge[edgeName].mapping[0].fromTable;
+      let toTableName = edge[edgeName].mapping[0].toTable;
 
-      var fromVertexClass = this.getVertexClassBySourceTableName(fromTableName);
-      var toVertexClass = this.getVertexClassBySourceTableName(toTableName);
+      let fromVertexClass = this.getVertexClassBySourceTableName(fromTableName);
+      let toVertexClass = this.getVertexClassBySourceTableName(toTableName);
 
       edge.source = fromVertexClass;
       edge.target = toVertexClass;
 
       // if other mappings are defined will be used to generate other edges definitions, that will be added to this.edges
-      var truncateMappings = false;
-      for(var j=1; j<edge[edgeName].mapping.length; j++) {
-        var currEdge = {};
+      let truncateMappings = false;
+      for(let j=1; j<edge[edgeName].mapping.length; j++) {
+        let currEdge = {};
         truncateMappings = true;
 
-        var edgeDef = {mapping: [], properties: {}, isLogical: false};
+        let edgeDef = {mapping: [], properties: {}, isLogical: false};
         edgeDef.mapping[0] = edge[edgeName].mapping[j];
         edgeDef.properties = edge[edgeName].properties;
         edgeDef.isLogical = edge[edgeName].isLogical;
@@ -313,8 +313,8 @@ export class OGraph {
 
   // zoom the 'g' inner container
   zoom() {
-    var scale = d3.event.scale;
-    var translation = d3.event.translate;
+    let scale = d3.event.scale;
+    let translation = d3.event.translate;
     this.innerContainer.attr("transform", "translate(" + translation + ")" +
       " scale(" + scale + ")");
   }
@@ -337,7 +337,7 @@ export class OGraph {
     this.nodeContainers = this.nodeContainers
       .data(this.vertices, function(d) { return d.name});
 
-    var enteringNodeContainers = this.nodeContainers
+    let enteringNodeContainers = this.nodeContainers
       .enter().append("g")
       .attr("id", function(d) {return "node-container-" + d.name;})
       .attr("class", "node-container");
@@ -377,7 +377,7 @@ export class OGraph {
     this.linkContainers = this.linkContainers
       .data(this.edges, (d) => {return this.getEdgeClassName(d) + "__" + d.source.name + "--" + d.target.name;});
 
-    var enteringLinkContainers = this.linkContainers
+    let enteringLinkContainers = this.linkContainers
       .enter().append("g")
       .attr("id", (d) => {return "link-container-" + this.getEdgeClassName(d);})
       .attr("class", "link-container");
@@ -388,7 +388,7 @@ export class OGraph {
       .attr("class", "link")
       .attr("stroke", "#000")
       .attr("stroke-dasharray", (d) => {
-        var edgeName = this.getEdgeClassName(d);
+        let edgeName = this.getEdgeClassName(d);
         if(d[edgeName].mapping && d[edgeName].mapping[0].joinTable) {
           return "5";
         }
@@ -426,7 +426,7 @@ export class OGraph {
 
   setBehavioursForNodesAndLinks() {
 
-    var self = this;
+    let self = this;
 
     function dblclick(d) {
       d3.select(this).classed("fixed", d.fixed = false);
@@ -448,7 +448,7 @@ export class OGraph {
           .style("opacity", 1);
       }
       else {
-        var edgeClassName = self.getEdgeClassName(d);
+        let edgeClassName = self.getEdgeClassName(d);
 
         d3.selectAll("#" + edgeClassName + "__" + d.source.name + "--" + d.target.name)
           .style("opacity", 1);
@@ -516,8 +516,8 @@ export class OGraph {
 
   tick() {
 
-    var r = this.config.node.r;
-    var arrivalRadius = r + 4;  // 4 added because we must take into account the refX of the marker (end arrow of the link)
+    let r = this.config.node.r;
+    let arrivalRadius = r + 4;  // 4 added because we must take into account the refX of the marker (end arrow of the link)
 
     // links' function
     this.linkContainers
@@ -525,19 +525,19 @@ export class OGraph {
       .attr("d", function(d) {
 
         // Total difference in x and y from source to target
-        var diffX = d.target.x - d.source.x;
-        var diffY = d.target.y - d.source.y;
+        let diffX = d.target.x - d.source.x;
+        let diffY = d.target.y - d.source.y;
 
         // Length of path from the edge of source node to edge of target node
-        var pathLength = Math.sqrt((diffX * diffX) + (diffY * diffY));
+        let pathLength = Math.sqrt((diffX * diffX) + (diffY * diffY));
 
         // x and y distances from center to outside edge of source node
-        var sourceOffsetX = (diffX * r) / pathLength;
-        var sourceOffsetY = (diffY * r) / pathLength;
+        let sourceOffsetX = (diffX * r) / pathLength;
+        let sourceOffsetY = (diffY * r) / pathLength;
 
         // x and y distances from center to outside edge of target node
-        var targetOffsetX = (diffX * arrivalRadius) / pathLength;
-        var targetOffsetY = (diffY * arrivalRadius) / pathLength;
+        let targetOffsetX = (diffX * arrivalRadius) / pathLength;
+        let targetOffsetY = (diffY * arrivalRadius) / pathLength;
 
         return "M" + (d.source.x + sourceOffsetX) + "," + (d.source.y + sourceOffsetY) +
           "L" + (d.target.x - targetOffsetX) + "," + (d.target.y - targetOffsetY);
@@ -574,9 +574,9 @@ export class OGraph {
 
   getVertexClassBySourceTableName(tableName) {
 
-    for(var vertexClass of this.vertices) {
+    for(let vertexClass of this.vertices) {
 
-      var firstTableMapped = vertexClass.mapping.sourceTables[0];  // only with aggregation we have more than one table mapped
+      let firstTableMapped = vertexClass.mapping.sourceTables[0];  // only with aggregation we have more than one table mapped
       if(firstTableMapped && firstTableMapped.tableName === tableName) {
         return vertexClass;
       }
@@ -617,7 +617,7 @@ export class OGraph {
     this.setSelectedElement(link);
 
     // performing this check because during the execution the keys sorting can change
-    var edgeClassName = this.getEdgeClassName(link);
+    let edgeClassName = this.getEdgeClassName(link);
 
     d3.select("#" + edgeClassName + "__" + link.source.name + "--" + link.target.name)
       .attr("stroke", "#bfff00")
@@ -663,7 +663,7 @@ export class OGraph {
     this.setSelectedElement(undefined);
 
     // performing this check because during the execution the keys sorting can change
-    var edgeClassName = this.getEdgeClassName(link);
+    let edgeClassName = this.getEdgeClassName(link);
 
     d3.select("#" + edgeClassName + "__" + link.source.name + "--" + link.target.name)
       .attr("stroke", "#000")
@@ -678,10 +678,10 @@ export class OGraph {
 
   getEdgeClassName(link) {
 
-    var edgeClassName = undefined;
-    var keys = Object.keys(link);
+    let edgeClassName = undefined;
+    let keys = Object.keys(link);
 
-    for(var key of keys) {
+    for(let key of keys) {
       if(key !== 'source' && key !== 'target') {
         edgeClassName = key;
         break;
@@ -694,9 +694,9 @@ export class OGraph {
   // it performs a search according to the value of the form looking for among the vertices and tables names.
   searchNode(targetName) {
 
-    var matchingNode;
+    let matchingNode;
 
-    for(var i=0; i<this.vertices.length; i++) {
+    for(let i=0; i<this.vertices.length; i++) {
 
       // checking the vertex class name
       if(this.vertices[i].name === targetName) {
@@ -707,8 +707,8 @@ export class OGraph {
       // check the correspondent source table name
       else {
 
-        for(var j=0; j<this.vertices[i].mapping.sourceTables.length; j++) {
-          var tableName = this.vertices[i].mapping.sourceTables[j].tableName;
+        for(let j=0; j<this.vertices[i].mapping.sourceTables.length; j++) {
+          let tableName = this.vertices[i].mapping.sourceTables[j].tableName;
           if(tableName === targetName) {
             matchingNode = this.vertices[i];
             break;
@@ -750,9 +750,9 @@ export class OGraph {
         .text(newClassName);
 
       // update ids of connected edges and their labels as they are based on the vertex name
-      var edgeClassName = undefined;
-      var updatedEdgesNames = [];
-      for(var edge of this.edges) {
+      let edgeClassName = undefined;
+      let updatedEdgesNames = [];
+      for(let edge of this.edges) {
         if(edge.source.name === newClassName) {
           edgeClassName = this.getEdgeClassName(edge);
           if(updatedEdgesNames.indexOf(edgeClassName) === -1) {
@@ -780,7 +780,7 @@ export class OGraph {
       d3.selectAll("#link-container-" + oldClassName)
         .attr("id", "link-container-" + newClassName)
         .select("path")
-        .attr("id", (d) => {return newClassName + "__" + d.source.name + "--" + d.target.name;})
+        .attr("id", (d) => {return newClassName + "__" + d.source.name + "--" + d.target.name;});
 
 
       // update edge labels
@@ -810,7 +810,7 @@ export class OGraph {
     if(classType === 'vertexClass') {
 
       // removing the vertex class from this.edges
-      for(var i=0; i<this.vertices.length; i++) {
+      for(let i=0; i<this.vertices.length; i++) {
         if(this.vertices[i].name === className) {
           this.vertices.splice(i, 1);
           break;
@@ -820,8 +820,8 @@ export class OGraph {
     else  if(classType === 'edgeClass') {
 
       // removing the edge class from this.edges
-      for(var i=0; i<this.edges.length; i++) {
-        var edge = this.edges[i];
+      for(let i=0; i<this.edges.length; i++) {
+        let edge = this.edges[i];
         if(this.getEdgeClassName(edge) === className) {
           this.edges.splice(i, 1);
           i--;
@@ -839,8 +839,8 @@ export class OGraph {
     // deselect all the instances of the edge
     this.deselectLastElement();
 
-    for(var i=0; i<this.edges.length; i++) {
-      var edge = this.edges[i];
+    for(let i=0; i<this.edges.length; i++) {
+      let edge = this.edges[i];
       if(this.getEdgeClassName(edge) === edgeClassName && edge.source.name === sourceName && edge.target.name === targetName) {
         this.edges.splice(i, 1);
         break;    // other matching items are impossible by design
@@ -871,7 +871,7 @@ export class OGraph {
     // ***********************************************************************
     // proof --> TO DELETE
     // this.edges.length = 0;
-    // var edge = {
+    // let edge = {
     //   "has_subtitle":{
     //     "mapping":[
     //       {
@@ -896,7 +896,7 @@ export class OGraph {
     // };
     // this.edges.push(edge);
 
-    // var newVertex = {
+    // let newVertex = {
     //   "externalKey":[
     //     "newNode_id"
     //   ],
@@ -926,15 +926,15 @@ export class OGraph {
     if(this.arrivalNode) {
 
       // starting modal
-      var edgeClassesNames = [];
-      for (var i = 0; i < this.edges.length; i++) {
-        var currEdgeName = this.getEdgeClassName(this.edges[i]);
+      let edgeClassesNames = [];
+      for (let i = 0; i < this.edges.length; i++) {
+        let currEdgeName = this.getEdgeClassName(this.edges[i]);
         if (edgeClassesNames.indexOf(currEdgeName) === -1) {
           edgeClassesNames.push(currEdgeName);
         }
       }
-      var fromVertex = JSON.parse(JSON.stringify(this.startingNode));
-      var toVertex = JSON.parse(JSON.stringify(this.arrivalNode));
+      let fromVertex = JSON.parse(JSON.stringify(this.startingNode));
+      let toVertex = JSON.parse(JSON.stringify(this.arrivalNode));
       this.graphContainer.openEdgeCreationModal(this.startingNode, this.arrivalNode, edgeClassesNames);
     }
     else {
@@ -987,10 +987,10 @@ export class OGraph {
 
   fadeOutInAllExceptNode(node) {
 
-    var link = this.svg.selectAll(".link")
+    let link = this.svg.selectAll(".link");
     link.style("opacity", "0");
 
-    var nodes = this.svg.selectAll(".node").filter(function(d) {
+    let nodes = this.svg.selectAll(".node").filter(function(d) {
       return d.name != node.name;
     });
     nodes.style("opacity", "0");
