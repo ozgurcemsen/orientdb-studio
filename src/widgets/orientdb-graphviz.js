@@ -1737,11 +1737,11 @@ let OrientGraph = (function () {
         menuSel = this;
 
         if (d.data.submenu) {
-
+          let res;
           if (d.data.submenu.entries instanceof Function) {
-            let res = d.data.submenu.entries(graph.selected);
+            res = d.data.submenu.entries(graph.selected);
           } else {
-            let res = d.data.submenu.entries;
+            res = d.data.submenu.entries;
           }
           if (d.data.submenu.type === 'tree') {
 
