@@ -1990,7 +1990,7 @@ let OrientGraph = (function () {
       },
       linkDistance: 500,
       linkStrength: 0.01,
-      charge: -250,
+      charge: -500,
       friction: 0.9,
       gravity: 0.2
     }
@@ -2021,33 +2021,16 @@ let OrientGraph = (function () {
         } else {
           let self = this;
           if (data.vertices) {
-            self.categoryCenters = {};
-            //   Nature: {x:100, y: 100},
-            //   Library: {x:200, y: 600},
-            //   Messaging: {x:700, y: 400},
-            //   Application: {x:400, y: 800},
-            //   V:  {x:800, y: 200},
-            // };
             data.vertices.forEach(function (elem) {
               let v = self.get(elem['@rid']);
               if (!v) {
                 v = new OVertex(self, elem);
-
                 self.addVertex(v);
               }
               if (elem["@class"]) {
                 if (self.classesInCanvas.vertices.indexOf(elem["@class"]) === -1) {
                   self.classesInCanvas.vertices.push(elem["@class"]);
                 }
-              }
-            });
-            const countVertex = self.classesInCanvas.vertices.length;
-            const center = {x: self.config.width / 2, y: self.config.height / 2};
-            const angleSteps = 360 / countVertex;
-            self.classesInCanvas.vertices.forEach(function (elem, i) {
-              self.categoryCenters[elem] = {
-                x: center.x + (countVertex > 1 ? (center.x * Math.cos(i * angleSteps * Math.PI / 180)) : 0),
-                y: center.y + (countVertex > 1 ? (center.y * Math.sin(i * angleSteps * Math.PI / 180)) : 0)
               }
             });
           }
@@ -2241,14 +2224,16 @@ let OrientGraph = (function () {
       this.toggleLegendInternal();
     },
     update: function (nodes, center, radius) {
-      let free = nodes.filter(function (e) {
-        return !(e.x && e.y);
+      const self = this;
+      self.categoryCenters = {};
+      const countVertex = this.classesInCanvas.vertices.length;
+      const angleSteps = 360 / countVertex;
+      this.classesInCanvas.vertices.forEach(function (elem, i) {
+        self.categoryCenters[elem] = {
+          x: center.x + (countVertex > 1 ? (center.x * Math.cos(i * angleSteps * Math.PI / 180)) : 0),
+          y: center.y + (countVertex > 1 ? (center.y * Math.sin(i * angleSteps * Math.PI / 180)) : 0)
+        }
       });
-      let len = free.length;
-      free.forEach(function (e, i, arr) {
-        e.x = center.x + radius * Math.sin(2 * Math.PI * i / len);
-        e.y = center.y + radius * Math.cos(2 * Math.PI * i / len);
-      })
     },
     redraw: function () {
 
