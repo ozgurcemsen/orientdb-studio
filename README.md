@@ -47,4 +47,7 @@ target/orientdb-studio.*.zip
 ```
 
 
+docker  build -t orientdb-studio-dev .  
+docker run -p 8080:8080  -d orientdb-studio-dev
+
 
