@@ -280,7 +280,8 @@ let OrientGraph = (function () {
     }
 
     function merge(config) {
-      return config ? getMerger().extend({}, OGraphDefaultConfig(), config) : OGraphDefaultConfig();
+      return OGraphDefaultConfig();
+      // return config ? getMerger().extend({}, OGraphDefaultConfig(), config) : OGraphDefaultConfig();
     }
 
     function getMerger() {
@@ -417,50 +418,21 @@ let OrientGraph = (function () {
       self.nodes.splice(0, self.nodes.length);
       self.links.splice(0, self.links.length);
     };
-    this.simulate = function (forceTick) {
-
-      let self = this;
-
-      let mst = 100;
-      let mas = 60;
-      let mtct = 1000 / mas;
-      let now = function () {
-        return Date.now();
-      };
-
-      let tick = this.force.tick;
-
-      this.force.tick = function () {
-        let startTick = now();
-        let step = mst;
-        while (step-- && (now() - startTick < mtct)) {
-          if (tick()) {
-            mst = 2;
-            return true
-          }
-        }
-        let rnd = Math.floor((Math.random() * 100) + 1);
-        if (rnd % 2 === 0) {
-          self.tick();
-        }
-
-        if (forceTick === true) {
-          self.tick();
-        }
-        return false;
-      }
-    };
 
     this.init = function () {
-
+      console.log(this.config);
       let self = this;
       this.force.nodes(this.nodes)
         .links(this.links)
         .size([this.config.width, this.config.height])
         .linkDistance(this.config.linkDistance)
-        .linkStrength(0.1)
+        .linkStrength(this.config.linkStrength)
         .charge(this.config.charge)
-        .friction(this.config.friction);
+        .friction(this.config.friction)
+        .on("tick",function(e){
+          self.tick(e);
+        });
+
 
 
       this.svgContainer = this.viewport.append('svg');
@@ -1391,9 +1363,24 @@ let OrientGraph = (function () {
 
       }
     }
+    const categoryCenter = {
+      Nature: {x:100, y: 100},
+      Library: {x:200, y: 600},
+      Messaging: {x:700, y: 400},
+      Application: {x:400, y: 800},
+      V:  {x:800, y: 200},
+    };
+    function moveToEachCenter(e, middle) {
+      return function (d) {
+        const cls = getClazzName(d);
+        const center = cls in categoryCenter ? categoryCenter[cls] : middle;
+        d.x += (center.x - d.x) * 0.1 * e.alpha;
+        d.y += (center.y - d.y) * 0.1 * e.alpha;
+      }
+    }
 
-    this.tick = function () {
-
+    const middle = {x: this.config.width / 2, y: this.config.height / 2};
+    this.tick = function (e) {
       let path = self.path.selectAll("path.edge");
 
       path.attr('d', calculateEdgePath);
@@ -1406,8 +1393,9 @@ let OrientGraph = (function () {
 
 
       if (self.edgeMenu) {
-        self.edgeMenu.refreshPosition();
+        //self.edgeMenu.refreshPosition();
       }
+      self.circle.each(moveToEachCenter(e, middle));
       self.circle.attr('transform', function (d) {
         return 'translate(' + d.x + ',' + d.y + ')';
       });
@@ -2001,16 +1989,17 @@ let OrientGraph = (function () {
 
     return {
       width: 1200,
-      height: 500,
+      height: 1200,
 
       classes: {},
       node: {
-        r: 30
+        r: 15
       },
-      linkDistance: 200,
-      charge: -1000,
+      linkDistance: 500,
+      linkStrength: 0.01,
+      charge: -300,
       friction: 0.9,
-      gravity: 0.1
+      gravity: 0.2
     }
   }
 
@@ -2238,8 +2227,6 @@ let OrientGraph = (function () {
       let center = {x: this.config.width / 2, y: this.config.height / 2};
       this.update(this.nodes, center, radius);
 
-      this.simulate(true);
-
       this.force.start();
     },
     toggleLegend: function () {
@@ -2262,8 +2249,6 @@ let OrientGraph = (function () {
       let radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2);
       let center = {x: this.config.width / 2, y: this.config.height / 2};
       this.update(this.nodes, center, radius);
-
-      this.simulate();
 
       this.force.start();
 
