@@ -31,6 +31,7 @@ let OrientGraph = (function () {
     this.nodes = [];
     this.classesLegends = [];
     this.force = d3.layout.force();
+    this.categoryCenters = {};
 
 
     this.colors = createColors(this.metadata.classes);
@@ -420,7 +421,6 @@ let OrientGraph = (function () {
     };
 
     this.init = function () {
-      console.log(this.config);
       let self = this;
       this.force.nodes(this.nodes)
         .links(this.links)
@@ -1363,23 +1363,16 @@ let OrientGraph = (function () {
 
       }
     }
-    const categoryCenter = {
-      Nature: {x:100, y: 100},
-      Library: {x:200, y: 600},
-      Messaging: {x:700, y: 400},
-      Application: {x:400, y: 800},
-      V:  {x:800, y: 200},
-    };
-    function moveToEachCenter(e, middle) {
+
+    this.moveToEachCenter = function(e) {
       return function (d) {
         const cls = getClazzName(d);
-        const center = cls in categoryCenter ? categoryCenter[cls] : middle;
+        const center = cls in self.categoryCenters ? self.categoryCenters[cls] : {x: self.config.width / 2, y: self.config.height / 2};
         d.x += (center.x - d.x) * 0.1 * e.alpha;
         d.y += (center.y - d.y) * 0.1 * e.alpha;
       }
-    }
+    };
 
-    const middle = {x: this.config.width / 2, y: this.config.height / 2};
     this.tick = function (e) {
       let path = self.path.selectAll("path.edge");
 
@@ -1395,7 +1388,7 @@ let OrientGraph = (function () {
       if (self.edgeMenu) {
         //self.edgeMenu.refreshPosition();
       }
-      self.circle.each(moveToEachCenter(e, middle));
+      self.circle.each(self.moveToEachCenter(e));
       self.circle.attr('transform', function (d) {
         return 'translate(' + d.x + ',' + d.y + ')';
       });
@@ -1997,7 +1990,7 @@ let OrientGraph = (function () {
       },
       linkDistance: 500,
       linkStrength: 0.01,
-      charge: -300,
+      charge: -250,
       friction: 0.9,
       gravity: 0.2
     }
@@ -2010,7 +2003,6 @@ let OrientGraph = (function () {
 
   OGraph.prototype = {
 
-
     on: function (event, cbk) {
       this.topics[event] = cbk;
       return this;
@@ -2022,7 +2014,6 @@ let OrientGraph = (function () {
 
 
     data: function (data) {
-      console.log(data);
       if (data) {
 
         if (data instanceof Array) {
@@ -2030,10 +2021,18 @@ let OrientGraph = (function () {
         } else {
           let self = this;
           if (data.vertices) {
+            self.categoryCenters = {};
+            //   Nature: {x:100, y: 100},
+            //   Library: {x:200, y: 600},
+            //   Messaging: {x:700, y: 400},
+            //   Application: {x:400, y: 800},
+            //   V:  {x:800, y: 200},
+            // };
             data.vertices.forEach(function (elem) {
               let v = self.get(elem['@rid']);
               if (!v) {
                 v = new OVertex(self, elem);
+
                 self.addVertex(v);
               }
               if (elem["@class"]) {
@@ -2041,21 +2040,30 @@ let OrientGraph = (function () {
                   self.classesInCanvas.vertices.push(elem["@class"]);
                 }
               }
-            })
+            });
+            const countVertex = self.classesInCanvas.vertices.length;
+            const center = {x: self.config.width / 2, y: self.config.height / 2};
+            const angleSteps = 360 / countVertex;
+            self.classesInCanvas.vertices.forEach(function (elem, i) {
+              self.categoryCenters[elem] = {
+                x: center.x + (countVertex > 1 ? (center.x * Math.cos(i * angleSteps * Math.PI / 180)) : 0),
+                y: center.y + (countVertex > 1 ? (center.y * Math.sin(i * angleSteps * Math.PI / 180)) : 0)
+              }
+            });
           }
+
           if (data.edges) {
             data.edges.forEach(function (elem) {
               let v1 = self.get(elem['from']) || self.get(elem['out']);
               let v2 = self.get(elem['to']) || self.get(elem['in']);
               let e = new OEdge(self, v1, v2, elem['@class'], elem);
               self.addEdge(e);
-
               if (elem["@class"]) {
                 if (self.classesInCanvas.edges.indexOf(elem["@class"]) === -1) {
                   self.classesInCanvas.edges.push(elem["@class"]);
                 }
               }
-            })
+            });
           }
         }
       }
@@ -2223,8 +2231,8 @@ let OrientGraph = (function () {
       this.init();
 
       this.drawInternal();
-      let radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2);
-      let center = {x: this.config.width / 2, y: this.config.height / 2};
+      const radius = this.nodes.length * this.config.linkDistance / (Math.PI * 2);
+      const center = {x: this.config.width / 2, y: this.config.height / 2};
       this.update(this.nodes, center, radius);
 
       this.force.start();
